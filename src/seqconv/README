@@ -1,0 +1,18 @@
+cpfasqpart can do random sampling.
+
+Only edit the *.pl file.
+The make file will automatically generate * file from the *.pl file with a
+suffix rule.
+
+This will make the perl interpreter more flexibily configured during install
+time.
+
+splitfasta
+
+usage: splitfasta -s [size of directory, default=4000] infile in fasta format
+
+This directory contains simple programs to format sequence files. 
+Normally, I should use the emboss package to deal with sequences of different
+format.  Sometimes user may simply copy and paste a single line of sequence
+into the file and call it fasta sequence.  Most computer programs will work
+with this, but it is hard for human to look at.

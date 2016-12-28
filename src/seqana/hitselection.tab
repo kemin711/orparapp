@@ -1,0 +1,8 @@
+hit selection table
+instruction to be used by selortho program
+Fugu->human
+True--------------------------------------
+Identity match score selratio
+27.83 |   115 |  48.14 |         1
+False-------------------------------------
+24.16 |   178 |  38.12 |       0.5

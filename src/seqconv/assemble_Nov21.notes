@@ -1,0 +1,65 @@
+I have implemented the assembly procedure.  Given fastq input, it will produce
+multiple assemblies with different amount of inputs and combination of
+parameters.
+If give reference sequence it will compare the different assemblies to the
+reference.  The difference can be viewed through sequence alignment
+between the reference and the consensus in text format.  
+
+There is usually > 0.999 identity between the reference and consensus.  In case
+of mismatch, the correctness of the consensus is 
+always confirmed by looking at the assembly viewer (gap5).  In several
+examples, short and large deletions were seen in the
+reference.  There could be 0-3 differences between the reference and the
+consensus, and in nearly all cases is caused by
+poly A or T.  
+
+The assembly can be viewed through gap5 assembly viewer.
+
+I have a tool (called fishing) to analyzed a particular region of interest.
+This is still not fully featured and waiting for further 
+user interaction and future feedback. 
+
+
+My current to do list include:
+
+1. Help Xin to understand and use the pipeline.
+2. Further identify future needs when the pipeline is used.
+3. Waiting for user input
+4. Write some documentation
+6. Add a feature to start from Bam files (this has to wait for the next batch
+of sequence runs for development and testing)
+
+Questions:
+1. How much effort to put into porting the pipeline to Xin's machine
+   Or wait for Carlos' new production machine to arrive with newer RedHat 
+   This is sysadmin type of work.  If I have the help from IT to install
+compiler and needed libraries I would rather not to do 
+    this type of work.  This is illustrated by the instance of yesterday.
+Something happened totally unrelated
+   to what I was doing on Xin's machine, but I was suspected (Pointed fingers
+at me by two people) to have
+   caused the problem.
+
+   This type of work requires significant efforts, but these efforts are
+invisible when connected to performance.
+
+2. How much efforts do we put into making graphical interface so that users
+don't have to do any thinking,
+  and just click and done.  Now we use comparison between the consensus and
+reference to validate the 
+  plasmid construction.  Basically, the customer provide us with what they
+think the plasmid should be,
+  and we provide the best consensus (This is still an area of further
+investigation; there is no single best
+  assembly from all the combination of parameters and inputs).  The sequence
+alignments between the two
+  is in text format.  There is also the quality score for the consensus that
+cannot be shown in the 
+  alignment.  Furthermore, the assembly viewer cannot incorporate the sequence
+alignment into the 
+  assembler's viewer.  Presumably, we can develop a full-featured web
+application that will not only
+  control the whole pipeline, but also view the results through the same
+portal.
+
+These are my thoughts.  At some point we may need to have a short meeting.

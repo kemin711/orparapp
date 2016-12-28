@@ -1,0 +1,134 @@
+#!/usr/local/bin/perl -w 
+#align the first two sequence in a file with two or
+#more fasta sequences
+
+$ALN_GAP = 55;
+$ALN_CUT = 130;
+$ALN_GAPEXT = 3;
+$MSK_SCORE = 20; #for trf score higher than this will be masked
+$DNA_MATRIX = "DNAelem";
+$host = $ENV{"HOSTNAME"};
+$host =~ s/\..+//;
+$program = "fasta33_t";
+$ktup = 1;
+
+$b = 0;
+$e = 0;
+$i=0;
+while ($ARGV[$i]) {
+	if ($ARGV[$i] eq "-b") { $b = $ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-e") { $e = $ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-m") { $DNA_MATRIX = $ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-c") { $ALN_CUT =  $ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-g") { $ALN_GAP =  $ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-p") { $program  =  $ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-k") { $ktup  =  $ARGV[++$i]; }
+	else {
+		die "$ARGV[$i] not accepted\n"
+	}
+	$i++;
+}
+if ($program eq "fasta") { $program = "fasta33_t"; }
+
+@primFiles = glob("*.prim");
+unless ($e) {
+	$e = @primFiles;
+}
+
+@tmpFile = ();
+#@badf = ();
+#@clean  = ();
+
+for ($i=$b; $i < $e; $i++) {
+	$outf = $primFiles[$i];
+	$outf =~ s/prim/laln/;
+	$fiveExist = writetmp($primFiles[$i], \@tmpFile);
+	if (!$fiveExist) {
+		print "One of the sequences have no 5'-region $primFiles[$i]\n";
+		next;
+	} 
+	$clean0 = $primFiles[$i];
+	$clean0 =~ s/\.fa$//;
+	$clean1 = $clean0;
+	$clean0 .= "0.msk";
+	$clean1 .= "1.msk";
+	print "====Creating masked sequences --->\n";
+	maskRep($tmpFile[0], $bad0);
+	maskRep($tmpFile[1], $bad1);
+	cleanMask($bad0, $clean0);
+	cleanMask($bad1, $clean1);
+
+	print "Aligning the first 2 sequences from $primFiles[$i] $i\n";
+	print "$clean0 $clean1 being aligned ";
+	if ($program eq "fasta33_t") {
+		print "using $program ---->\n";
+		$outf =~ s/laln/faln/;
+		system("$program $clean0 $clean1 $ktup -H -Q -f -17 -g -2 -n -s dna.mat -c 1 > $outf");
+	}
+	else {
+		print "using dynamic programing ----->\n";
+		system("mlocalS $clean0 $clean1 $DNA_MATRIX 1 $ALN_GAP $ALN_GAPEXT -c$ALN_CUT | elemfilter > $outf");
+	}
+}
+system("rm $tmpFile[0]*"); #remove *.mask file from trf
+system("rm $tmpFile[1]*");
+
+##########################################################
+
+sub writetmp {
+	my $inf = $_[0];
+	my $rtmp = $_[1];
+	open IN, "<$inf";
+	my ($i, $ln, $outf);
+	$i=0;
+	$ln = <IN>;
+	while  ($i<2 &&  $ln =~ /^>/ && !eof) {
+		$rtmp->[$i] = $host . $$;
+		$rtmp->[$i] .= $i;
+		$outf = $rtmp->[$i];
+		open SEQ, ">$outf";
+		print SEQ $ln;
+		$ln = <IN>;
+		while (!eof && $ln !~ /^>/) {
+			if ($ln =~ /^NO 5'-Sequence/) {
+				print "this sequence have no 5' region, partial\n";
+				close IN;
+				return 0;
+			}
+			print SEQ $ln;
+			$ln = <IN>;
+		}
+		close SEQ;
+		$i++;
+	}
+	close(IN);
+	return  1;
+}
+
+sub maskRep {
+	my $inf = $_[0];
+	#tmp0 and tmp1 as the input file
+	print "\n====Removing tandem repeats from $inf file---->\n";
+	system("trf $inf 2 7 7 80 10 $MSK_SCORE 500 -d -m");
+	$_[1] = $inf . ".2.7.7.80.10.$MSK_SCORE.500.mask";
+}
+
+sub cleanMask {
+	##############clean bad output format from trf#######
+	my $badfile = $_[0];
+	my $goodfile = $_[1];
+	open BAD, "<$badfile";
+	open GD, ">$goodfile";
+	my $lnn = <BAD>;
+	$lnn =~ s/^>masked  />/;
+	print GD $lnn;
+	$lnn = <BAD>;
+	$lnn = <BAD>;
+	while ($lnn) {
+		print GD $lnn;
+		$lnn = <BAD>;
+	}
+	close(BAD); 
+	close(GD);	
+}
+

@@ -1,0 +1,33 @@
+#!/usr/bin/perl -w
+
+use SeqIterator;
+use Bioseq;
+
+my $infile=$ARGV[0];
+
+#open IN, "<$infile" or die $!;
+
+my $reader = SeqIterator->new($infile);
+while (my $seq=$reader->next) {
+	print ">", $reader->getId;
+    print " ", $reader->title if ($reader->title);
+    print "\n";
+    printSeq($seq);
+}
+
+__END__
+
+=head1 NAME
+
+fashortid - discard all secondary ids from the header of fasta files
+
+=head1 SYNOPSIS
+
+    fashortid <infile > outfile
+
+=head1 DESCRIPTION
+
+This simple pipe program discards all the junk ids except for the first
+id. The title will be the cleaned up version too.
+
+

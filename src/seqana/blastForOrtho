@@ -1,0 +1,42 @@
+#!/usr/bin/perl -w
+
+#E for fugu to mammalian should be 9
+
+$infile = "fugunr";
+$begin=0;
+$pieces = 50;
+$target = "humannr";
+$E = 9;
+$i=0;
+if (@ARGV < 1) { usage(); die;}
+while ($ARGV[$i]) {
+	if ($ARGV[$i] eq "-i") { $infile=$ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-b") { $begin=$ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-p") { $pieces=$ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-d") { $target=$ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-e") { $E=$ARGV[++$i]; }
+	$i++;
+}
+
+$blCommandBase="blastall -p blastp -m 8 -F F -v 500 -b 500 -d $target -e $E";
+
+for ($i=$begin; $i<$pieces; $i++) {
+	$inf = $infile . "." . $i;
+	$outfile = $inf . "_" . $target . ".blp";
+	$cmd = $blCommandBase . " -i $inf -o $outfile";
+	print "blasting $inf against $target into $outfile ... \n";
+	$status = `$cmd`;
+	print "Status: $status  ";
+	if ($status =~ /ERROR/) {
+		die "$cmd failed\n";
+	}
+	print "= done =\n";
+}
+
+# if query has more than 500 hits and the last hit is significant 
+# then need to write program to finish the rest of the hit
+sub usage {
+	print <<UEND
+	blastForOrtho -i infile -d database -p pieces -b start_piece default 0
+UEND
+}

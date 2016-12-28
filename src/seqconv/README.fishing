@@ -1,0 +1,214 @@
+For using fishing
+
+
+Interested in a region in Bar5
+
+First looking at the alignment between the reference and the assembly
+at position 1899 there are 8 T in the reference and 11 T in the assembly.
+
+1821      1831      1841      1851      1861      1871      1881
++         +         +         +         +         +         +
+TAGTCCCGCCCCTAACTCCGCCCATCCCGCCCCTAACTCCGCCCAGTTCCGCCCATTCTCCGCCCCATGG
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+TAGTCCCGCCCCTAACTCCGCCCATCCCGCCCCTAACTCCGCCCAGTTCCGCCCATTCTCCGCCCCATGG
++         +         +         +         +         +         +
+1820      1830      1840      1850      1860      1870      1880
+
+1891                1908      1918      1928      1938      1948
++         +         +         +         +         +         +
+CTGACTAA---TTTTTTTTATTTATGCAGAGGCCGAGGCCGCCTCTGCCTCTGAGCTATTCCAGAAGTAG
+||||||||   |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+CTGACTAATTTTTTTTTTTATTTATGCAGAGGCCGAGGCCGCCTCTGCCTCTGAGCTATTCCAGAAGTAG
++         +         +         +         +         +         +
+1890      1900      1910      1920      1930      1940      1950
+
+
+1         11        21        31        41        51        61
++         +         +         +         +         +         +
+GCCCATTCTCCGCCCCATGGCTGACTAATTTTTTTTATTTATGCAGAGGCCGAGGCCGCCTCT
+                            29
+I run the following command
+
+fishing -i bar5.fastq -s GCCCATTCTCCGCCCCATGGCTGACTAATTTTTTTTATTTATGCAGAGGCCGAGGCCGCCTCT -p 29 -r T -n 8 
+
+The Options for this program:
+   -i inputFastQfileName  This is the fastq sequence files for this particular plasmid.
+	   All the sequences for this plasmid are here.
+
+	-s siteOfInterest   This is the sequence for the site that we are interested.
+	   Normally you will need 15-18 nt on either side of the site of interest. In this case
+		out site is flanked by realy strange sequences with not only direct repeats but also
+		a lots of C and Gs, so we chose a longer size.
+
+	-p [ --repeat-start ] arg             Repeat start in site, 1-based index
+	    This is the position where the Poly T starts.  It is 1-based index.
+       This option and -r -n will tell this program to do the counting of 
+       different number of repeats.  These three options have to be given
+       together.  If not given, the counting will not be done.
+
+   -r [ --repeat-base ] arg              Base in the repeat
+	     RepeatBase  The base that is repeated.  There is some redundancy here. This is used to
+	     make sure we don't make a mistake in counting.
+
+   -n [ --repeat-count ] arg             Number of repeats
+	    Is the number of T in the repeat.
+
+	-f [ --outfile1 ] arg                 file for alignments in the forward 
+														direction
+	-b [ --outfile2 ] arg                 file for alignments in the backward 
+														direction
+	-o [ --outfile ] arg                  file for storing matched fastq 
+														sequences
+	-s [ --site ] arg                     The ambiguous site sequence. A length 
+														of 35-45 works the best. A good 
+														example: CGGGCAAGAGCAACTCGGTCGCCGCATACA
+														CTATTCTCAGAATGAC
+	-y [ --identity-cutoff ] arg (=0.879999995)
+														The sequence identity bewtween site and
+														target sequence above which target will
+														be processed. A fraction (0-1].
+	-l [ --alnlen-cutoff ] arg (=16)      The length of the alignment between the
+														cut-site and target sequence above 
+														which target will be processed.
+	-c [ --cov-cutoff ] arg (=0.699999988)
+                                        The coverage of the site.
+
+
+Our result:
+result written to bar5.match and bar5rc.match
+   206510 no match 
+   Align forward: 24 perfect match to site
+                  451 match site with defects
+   Align backward: 0 perfect match to site
+                   175 match site with defects
+repeat	count
+0	32
+2	5
+3	41
+4	73
+5	26
+6	8
+7	42
+8	119
+9	98
+10	65
+11	141
+average: 7.98058 n: 618 T
+Variant of the repeat:
+CCTTATTT	1
+CTTATTTTT	1
+TATATTTT	1
+TTATTTTT	2
+TTTATTTT	11
+TTTTATTT	15
+TTTTTTATT	1
+
+I saw more 11 T than 8 T
+
+
+fishing -i bar5.fastq -s GCCCATTCTCCGCCCCATGGCTGACTAATTTTTTTTTTTATTTATGCAGAGGCCGAGGCCGCCTCT -p 29 -r T -n 11 -f t11forward.match -b t11backward.match -o t11fish.fastq
+
+result written to t11forward.match and t11backward.match
+   206645 no match 
+   Align forward: 49 perfect match to site
+                  413 match site with defects
+   Align backward: 0 perfect match to site
+                   53 match site with defects
+repeat	count
+0	19
+4	22
+5	20
+6	7
+7	36
+8	111
+9	80
+10	64
+11	156
+average: 8.96371 n: 496 T
+Variant of the repeat:
+ATTTTTTTTTT	2
+CTCTTATTTTT	1
+TTATTTATTTT	4
+TTATTTTATTT	4
+TTTATTTTATT	1
+TTTTTTATTTT	1
+TTTTTTATTTTT	1
+TTTTTTTATTT	3
+TTTTTTTTATT	1
+TTTTTTTTTAT	1
+
+It is clear that there should be 9 T, but for some reason 11 T has the highest count.
+
+In my experience, you see a pattern of N-1 has the highest count, and N count is higher than N-2
+and both N and N-2 are lower than N-1.  11T does not show this pattern and thus must be
+produced by some strange artifact.
+
+# now run with the expected 9T 
+fishing -i bar5.fastq -s GCCCATTCTCCGCCCCATGGCTGACTAATTTTTTTTTATTTATGCAGAGGCCGAGGCCGCCTCT -p 29 -r T -n 9 -f t9forward.match -b t9backward.match -o t9fish.fastq
+
+207160 sequences analyzed
+Final min max score:
+36  79
+result written to t9forward.match and t9backward.match
+   206560 no match 
+   Align forward: 22 perfect match to site
+                  455 match site with defects
+   Align backward: 0 perfect match to site
+                   123 match site with defects
+repeat	count
+0	26
+2	1
+3	16
+4	58
+5	25
+6	8
+7	43
+8	113
+9	104
+10	65
+11	141
+average: 8.35714 n: 574 T
+Variant of the repeat:
+ATTATTTTT	1
+ATTTTTTTT	1
+CCTTATTTT	1
+CTCTTATTT	1
+CTTATTTTT	1
+TATTATTTT	2
+TTATTATTT	9
+TTTATTTTAT	1
+TTTATTTTT	1
+TTTTATTTT	7
+TTTTTTATT	1
+
+
+#now run with higher identity cutoff
+fishing -i bar5.fastq -s GCCCATTCTCCGCCCCATGGCTGACTAATTTTTTTTTATTTATGCAGAGGCCGAGGCCGCCTCT -p 29 -r T -n 9 -f t9forward.match -b t9backward.match -o t9fish.fastq -y 0.92
+
+207160 sequences analyzed
+Final min max score:
+36  79
+result written to t9forward.match and t9backward.match
+   206651 no match 
+   Align forward: 22 perfect match to site
+                  442 match site with defects
+   Align backward: 0 perfect match to site
+                   45 match site with defects
+repeat	count
+0	11
+4	18
+5	18
+6	6
+7	36
+8	111
+9	104
+10	65
+11	140
+average: 8.96386 n: 498 T
+Variant of the repeat:
+ATTTTTTTT	1
+TTATTATTT	4
+TTTATTTTAT	1
+TTTTATTTT	4
+TTTTTTATT	1
+

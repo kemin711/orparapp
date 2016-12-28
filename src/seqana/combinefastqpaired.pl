@@ -1,0 +1,158 @@
+### perl ###
+
+use strict;
+
+# designed to work insde a working directory.
+# Combine all input fastq into one.
+my $action='current';
+
+my @dirs;
+my $i=0;
+while ($ARGV[$i]) {
+   if ($ARGV[$i] eq '--all' || $ARGV[$i] eq '-a') {
+      $action = 'all';
+   }
+   else {
+      $action = 'dir';
+      push @dirs, $ARGV[$i];
+   }
+   ++$i;
+}
+
+if ($action eq 'current') { 
+   combineCurrentDirectory();
+}
+elsif ($action eq 'all') { 
+   combineAllDirectories();
+}
+else {
+   combineDirectories(\@dirs);
+}
+print "done\n";
+
+#################################################
+
+sub combineAllDirectories {
+   print STDERR "Combining fastq in all directories ...\n";
+   my @dirs = glob("*.FASTQs");
+   #combineDirectories(\@dirs);
+   combineIntoOne(\@dirs);
+}
+
+sub combineIntoOne {
+   my $srcdirs = shift;
+   print "Combining fastq in subdirectories into current directory\n";
+   unlink "all_1.fastq";
+   unlink "all_2.fastq";
+   foreach my $d (@$srcdirs) {
+      print "working on $d ...\n";
+      system("cat $d/all_1.fastq >> all_1.fastq");
+      system("cat $d/all_2.fastq >> all_2.fastq");
+   }
+}
+
+=head2 combineDirectories
+
+ combine all given directories
+
+ @param ($list_of_dirs)
+
+=cut
+sub combineDirectories {
+   my $dirs = shift;
+   foreach my $d (@$dirs) {
+      print STDERR "working on $d ...\n";
+      combineOneDirectory($d);
+   }
+}
+
+=head2 combineOneDirectory
+
+ work in a particular directory
+
+=cut
+sub combineOneDirectory {
+   my $dir=shift;
+   #print "before changing to $dir: ", `pwd`;
+   my $pwd = `pwd`;
+   chdir $dir;
+   chomp $pwd;
+   #print "after changing to $dir: ", `pwd`;
+
+   my @fastqs = glob("*.fastq");
+   @fastqs = grep { !/all_[12]\.fastq$/ } @fastqs;
+   if (@fastqs > 0) {
+      print "combining fastqs in $dir ...\n";
+      my ($forward, $backward) = sortPair(\@fastqs);
+      catFiles($forward, "all_1.fastq");
+      catFiles($backward, "all_2.fastq");
+   }
+   else {
+      die "no fastq input file in $dir\n";
+   }
+   chdir $pwd;
+   #print "after done: ", `pwd`;
+}
+
+=head2 combineCurrentDirectory
+
+ work in the current directory.
+
+=cut
+sub combineCurrentDirectory {
+   print "combining fastqs in the current directory ...\n";
+   my @fastqs = glob("*.fastq");
+   @fastqs = grep { !/all_[12]\.fastq$/ } @fastqs;
+   if (@fastqs > 0) {
+      my ($forward, $backward) = sortPair(\@fastqs);
+      catFiles($forward, "all_1.fastq");
+      catFiles($backward, "all_2.fastq");
+   }
+   else {
+      die "no input fastq file in current directory. Try -a option\n";
+   }
+}
+
+sub catFiles {
+   my $files = shift;
+   my $combo = shift;
+
+   my $cmd = "cat " . join(' ', @$files) . " > $combo";
+   #system("cat " . join(' ', @$files) . " > $combo");
+   print "running command $cmd ...\n";
+   system($cmd);
+   if ($?>>8) {
+      die "Failed to cat multiple files into one!\n";
+   }
+   print join(' | ', @$files), " combined into one: $combo\n";
+}
+
+=head2 sortPair
+
+ Given a list of fastq files, it will sort them into 
+ forward and backwar lists based on the file pattern:
+ 
+  *_1.fastq and _2.fastq with the 1 being forward and 2 being
+  backward read of the same fragment.
+
+=cut
+sub sortPair {
+   my $fnames = shift;
+   my (@forward, @backward);
+
+   foreach my $f (sort @$fnames) {
+      if ($f =~ /_1.fastq$/) {
+         push @forward, $f;
+      }
+      elsif ($f =~ /_2.fastq$/) {
+         push @backward, $f;
+      }
+      else {
+         die "$f is not paired end read!\n";
+      }
+   }
+   if (@forward != @backward) {
+      die "forward and backward should have the same number of files\n";
+   }
+   return (\@forward, \@backward);
+}

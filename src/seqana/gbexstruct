@@ -1,0 +1,33 @@
+#!/usr/bin/perl -w
+
+$str=$ARGV[0];
+open IN, "<$str" or die $!;
+
+while (<IN>) {
+   chomp;
+   $range .= $_;
+}
+$range =~ s/\s+//g;
+print $range, "\n";
+computeStructure($range);
+
+sub computeStructure {
+   my $txt = shift;
+   $txt =~ s/^join\(//;
+   $txt =~ s/\)//;
+   print "after clean up:\n", $txt, "\n";
+   my @arr = split /,/, $txt;
+   my @ex = ();
+   foreach my $x (@arr) {
+      @tmp = split /\.\./, $x;
+      push @ex, [@tmp];
+   }
+   print scalar(@ex), " exons\n";
+   my @in = ();
+   for (my $i=0; $i<@ex-1; ++$i) {
+      my $inlen = $ex[$i+1]->[0] - $ex[$i]->[1] -1;
+      push @in, $inlen;
+      print $inlen, " ";
+   }
+   print "\n", scalar(@in), " introns\n";
+}

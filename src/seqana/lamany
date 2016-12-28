@@ -1,0 +1,21 @@
+#!/usr/local/bin/perl -w 
+
+@primFiles = glob("*.prim");
+
+
+#for ($i=0; $i<@primFiles; $i++) {
+for ($i=0; $i<3; $i++) {
+	system("splitfasta $primFiles[$i] > xx");
+	$primdir = $primFiles[$i];
+	$primdir =~ s/\.prim/dir/;
+	open IN, "<xx";
+	$f1 = <IN>;
+	$f2 = <IN>;
+	$f1 = $primdir . "\/" . $f1;
+	$f2 = $primdir . "\/" . $f2;
+	print "$f1  $f2 \n";
+	system("cat $f1 $f2");
+	@argar=("lalign", $f1, $f2);
+	system(@argar);
+	system("lalign 004F12.LBCdir/004F12.LBC_5prim.fa 004F12.LBCdir/RS.ctg16318-000000.1.2_5prim.fa");
+}

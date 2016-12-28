@@ -1,0 +1,312 @@
+#!/usr/local/bin/perl
+
+use strict;
+use File::Basename;
+use Log::Log4perl;
+
+my $HOME=$ENV{HOME};
+# configure is for europa, Kraken will be separate
+my %config=(refseqfile => "/ngs/ngs16/zhouke/virology/hcvref.fas",
+   bowtie2bin => "$HOME/bin/bowtie2",
+   samtoolsbin => "/usr/local/bin/samtools",
+   workdir => "/d1/work/virology/benchmark",
+   seqlencut => 180,
+   bindir => "$Home/bin",
+   numcpu => 4
+);
+
+# samtools and bcftools needs to be installed on 
+# kraken
+my $hostname=$ENV{HOSTNAME};
+if ($hostname eq 'kraken') {
+   $config{numcpu}=80;
+   $config{bindir}="$HOME/kraken/bin";
+   $config{workdir}="/ng14/zhouke/virology/benchmark";
+}
+
+# need to adjust binary accordingly on different hosts
+my @dirs=("Oct10S61_70", "S141_150R10_27", "S170_180R10_25");
+my $i=0;
+while ($ARGV[$i]) {
+   if ($ARGV[$i] eq "--help") {
+      usage();
+   }
+   elsif ($ARGV[$i] eq "-w" || $ARGV[$i] eq "--work-dir") {
+      $config{workdir}=$ARGV[++$i];
+   }
+   else {
+      push @dirs, $ARGV[$i];
+   }
+   ++$i;
+}
+
+Log::Log4perl->init("$HOME/src/proj/seqana/samtoolspipe_log.conf");
+my $log=Log::Log4perl->get_logger("samtoolspipe");
+
+chdir $config{workdir};
+my $bowtie2Ref= buildBowtie2Index(); # for bowtie2
+my $samRef = indexForSam(); # for samtools
+foreach my $d (@dirs) {
+   processOneDirectory($d);
+}
+
+##################################################
+
+sub processOneDirectory {
+   my $dir = shift;
+   my $pwd=`pwd`;
+   chomp $pwd;
+   chdir $dir; # process inside a particular run directory.
+   #### do work here ###
+   my @fastqs=glob("*.fastq");
+   foreach my $q (@fastqs) {
+      # for first round run
+      my $bowtie2RefPath="$workdir/$bowtie2Ref";
+      my $samRefPath = $config{workdir} . "/$samRef";
+      createVariant($q, $bowtie2RefPath, $samRefPath);
+      # for second round use own consensus
+      my $consensusPath = makeConsusePath(); # TODO
+      createVariant($q, $consensusPath);
+   }
+   ### go back to original directory ###
+   chdir $pwd;
+}
+
+sub createVariant {
+   my $fqfile=shift;
+   my $bowtie2ref=shift;
+   my $samref=shift;
+
+   # 1. filter fastq by length
+   my ($outqfile, $numseq) = filterFastqByLength($fqfile);
+   my $samfile = runOneBowtie2($outqfile, $bowtie2ref); 
+   my $bamfile = converSamToBam($samfile); # for viriant input
+   my $tafile = convertBamToTable($bamfile);
+   my $alnfile = runAlnlocalmany($q);
+   variantCall($bamfile, $numseq, $samref);
+}
+
+=head2 buildBowtie2Index
+
+ return the filename without the suffix ".fas"
+
+=cut
+sub buildBowtie2Index {
+   my ($name, $path, $suffix) = fileparse($config{refseqfile}, ".fas");
+   my $rfname = $name . $suffix;
+   if ( ! -e $rfname) {
+      system("cp " . $config{refseqfile} . " $rfname");
+   }
+   my @files = glob("*.bt2");
+   if (@files == 0) {
+      system("bowtie2-build $rfname $name");
+   }
+   return $name;
+}
+
+=head2 indexForSam
+ 
+ return the files name for the refseq file
+ not the final result. The final result is not mentioned by any program.
+
+=cut
+sub indexForSam {
+   my ($name, $path, $suffix) = fileparse($config{refseqfile}, ".fas");
+   my $rfname = $name . $suffix;
+   if ( ! -e $rfname) {
+      system("cp " . $config{refseqfile} . " $rfname");
+   }
+   my $idxf = $rfname . ".fai";
+   if (-e $idxf && !-z $idx) {
+      $log->warn("fasta index $idxf for samtools exists, not repeating.");
+   }
+   else {
+      my $cmd=$config{samtoolsbin} . " faidx $rfname";
+      system($cmd);
+      if ($?>>8) {
+         $log->fatal("Failed to run $cmd");
+         die $!;
+      }
+   }
+   return $refname;
+}
+  
+=head2 filterFastqByLength
+
+Discard read <= 180 nt
+
+=cut
+sub filterFastqByLength {
+   my $inq = shift;
+   my ($ouq, $suffix)  = fileparse($inq, ".fastq");
+   $ouq .= "_cut" . $config{seqlencut} . ".fastq";
+   $log->info("filtering fastq by length 180 nt $inq to $ouq ...");
+   my $numseq=0;
+   if (-e $ouq) {
+      $log->info("$ouq already exists, we are not doing it again");
+      my $numseq=`wc -l $ouq`;
+      chomp $numseq;
+      if ($numseq =~ /^(\d+)/) {
+         $numseq = $1;
+         $numseq /= 4;
+      }
+      else {
+         $log->fatal("Failed to count number of fastq seq in file $ouq");
+         die "inproper output $numseq\n";
+      }
+   }
+   else {
+      $log->debug("you need to write a fastq filter program for $inq");
+      #system("fastqpick -l " . $config{seqlencut} . " -i $inq -o $ouq");
+      my $cmd = "fastqpick -l " . $config{seqlencut} . " -i $inq -o $ouq";
+      my $result = `$cmd`;
+      if ($result =~ /(\d+) fastq sequences picked/) {
+         $numseq = $1;
+      }
+   }
+   return ($ouq, $numseq);
+}
+
+=head runOneBowtie2
+
+This will return the sam output file
+
+=cut
+sub runOneBowtie2 {
+   my $fastqfile = shift;
+   my $refseqpath = shift;
+
+   my $bowtie2bin=$config{bowtie2bin};
+   my $workdir=$config{workdir};
+   my ($base, $path, $suffix) = fileparse($fastqfile, ".fastq");
+
+   my $samoutFile = $base . ".sam";
+   my $command = "$bowtie2bin -p " . $config{numcpu} . " -x $refseqpath -U $fastqfile -S $samoutFile";
+   if (-e $samoutFile) {
+      $log->info("sam output $samoutFile from command $command exists not redoing");
+   }
+   else {
+      system($command);
+      if ($?>>8) {
+         $log->fatal("Failed to run $command");
+         die "Faield $command";
+      }
+      $log->info("succesfully run $command");
+   }
+   return $samoutFile;
+}
+
+sub convertSamToBam {
+   my $sam = shift;
+   my $bam = switchExtension($sam, ".bam");
+   my $cmd = $config{samtoolsbin} . " view -b $sam -o $bam";
+   if (-e $bam && ! -z $bam) {
+      $log->warn("bam file $bam exists, not redoing the job");
+   }
+   else {
+      system($cmd);
+      if ($?>>8) {
+         $log->fatal("Failed to run $cmd");
+         die $!;
+      }
+      $log->info("succsfully run $cmd");
+   }
+}
+
+sub converBamToTable {
+   my $bam = shift;
+   my $tab = switchExtension($bam, ".tab");
+   if (-e $tab && ! -z $tab) {
+      $log->warn("tabular file from bam $bam exists, not redoing");
+   }
+   else {
+      my $cmd = "bam2tab -o $tab $bam";
+      system($cmd);
+      if ($?>>8) {
+         $log->fatal("Failed $cmd");
+         die $!;
+      }
+      $log->info("successfully run $cmd");
+   }
+}
+
+sub runAlncocalmany {
+   my $fastqfile = shift;
+   my $alnfile = switchExtension($fastqfile, ".aln");
+   if (-e $alnfile && ! -z $alnfile) {
+      $log->warn("alignment result file $alnfile exists and we are not redoing it");
+   }
+   else {
+      my $cmd = "alnlocalmany $fastqfile $alnfile";
+      system($cmd);
+      if ($?>>8) {
+         $log->fatal("failed to run $cmd");
+         die ("Failed to run $cmd");
+      }
+   }
+   return $alnfile;
+}
+
+=head2 variantCall
+
+call variant for one bam file derived from bowtie2 mapping output.
+
+ return the final bcf file.
+
+=cut
+sub variantCall {
+   my $bam=shift;
+   my $numseq=shift;
+   my $refPath=shift;
+
+   my $sorted = substr($bam, 0, rindex($bam, '.')) . ".sorted.bam";
+   my $cmd = $config{samtoolsbin} . " sort -o $sorted $bam";
+   system($cmd);
+   if ($?>>8) {
+      $log->fatal("Failed to run $cmd");
+      die $!;
+   }
+   # run mpileup
+   my $rawbcf = substr($bam, 0, rindex($bam, '.')) . "raw.bcf";
+   my $bcf = substr($bam, 0, rindex($bam, '.')) . ".bcf";
+   #my $refPath = $config{workdir} . "/$refseqName";
+   my $pcmd = $config{samtoolsbin} . " mpileup -d $numseq -g -s -f $refPath -o $rawbcf $sorted";
+   system($pcmd);
+   if ($?>>8) {
+      $log->fatal("failed to run $pcmd");
+      die $!;
+   }
+   my $ccmd = $config{bindir} . "/bcftools call -A -o $bcf -m -P 0.005 $rawbcf";
+   system($ccmd);
+   if ($?>>8) {
+      $log->fatal("failed to run $ccmd");
+      die $!;
+   }
+   return $bcf;
+}
+
+sub switchExtension {
+   my $f = shift;
+   my $suffix = shift;
+
+   if ($f =~ /(.+?)\.[a-z]+$/) {
+      return $1 . $suffix;
+   }
+   else {
+      return $f . $suffix;
+   }
+}
+
+__END__
+
+=nead1 DESCRIPTION
+
+I am trying to develop a variant calling pipelie using the samtools.
+The first attempt will be for the HCV project.
+
+I have done some preliminary investigation, and my conclusion is that,
+the combinatine of bowtie2 and samtools is good for variant calling,
+but it is poor suited for the HCV type of projects.
+
+So this project at the intial stage is only for comparison only.
+

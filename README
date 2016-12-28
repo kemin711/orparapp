@@ -1,0 +1,4 @@
+This project contains the basic utilities for doing sequence analyssis.  Only
+C++ source codes are integrated with the autotools.  The original project
+contains large fraction of perl code that will be added into the autotool
+framework in future releases.

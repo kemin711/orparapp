@@ -1,0 +1,16 @@
+#!/usr/bin/perl -w
+
+use  GTFConverter;
+
+my $reader=GTFConverter->new;
+
+#my $dir="/home/analysis/kzwork/analysis/externalGenomes/Coprinus_cinereus";
+#my $gtffile="/home/analysis/kzwork/analysis/externalGenomes/Coprinus_cinereus/transcripts.gtf";
+my $gtffile="transcripts.gtf";
+#my $gtffile="/home/kzhou/work/gtfconverter/transcripts.gtf";
+
+#chdir $dir;
+$reader->processFile($gtffile);
+$reader->contigToTable("contigs.fasta");
+$reader->proteinToTable("proteins.fasta");
+print STDERR "All Done!\n";

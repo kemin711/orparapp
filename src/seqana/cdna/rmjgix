@@ -1,0 +1,213 @@
+#!/usr/bin/perl -w
+
+use Bioseq;
+use SeqIterator;
+use strict;
+use UncoverPolyA;
+
+my %config=(minlen => 35);
+# sequence before or after processing shorter than minlen
+# will not be written to the output file ($oufile)
+#
+my $DEBUG=0;
+
+#my $infile="/home/analysis/kzwork/pasa/MicpuN2Sanger/ESTSanger.fas";
+my ($infile, $oufile);
+my $i=0;
+while ($ARGV[$i]) {
+    if ($ARGV[$i] eq '-o') { $oufile=$ARGV[++$i]; }
+    else {
+        if ($ARGV[$i] =~ /^-/) {
+            die "wrong option\n";
+        }
+        $infile=$ARGV[$i];
+    }
+    ++$i;
+}
+
+if (!$oufile) { $oufile = Bioseq::fileStem($infile) . 'nox.fas'; }
+
+open OU, ">$oufile" or die $!;
+open LOG, ">rmjunk.log" or die $!;
+
+print STDERR "reading input from $infile ...\n";
+my $walker=SeqIterator->new($infile);
+my ($seq);
+while ($seq=$walker->next) {
+    #print $seq, "\n";
+    my $origseq=$seq;
+    next if ($seq =~ /^[ACGTN]{0,$config{minlen}}X+[ACGTN]{0,$config{minlen}}$/);
+    while ($seq =~ s/^[ACGTN]{0,40}X+//g) { }
+    next if (length($seq) < $config{minlen});
+    while ($seq =~ s/X+[ACGTN]{0,40}$//g) { }
+    next if (length($seq) < $config{minlen});
+    if ($seq =~ /(.+)X+(.+)/) {
+        if (length($1) > length($2)) {
+            $seq =~ s/X+.+//;
+        }
+        else {
+            $seq =~ s/.+X+//;
+        }
+    }
+    next if (length($seq) < $config{minlen});
+    if ($seq =~ /X/) {
+        print STDERR $walker->header, "\n";
+        printSeq($origseq, *STDERR);
+        die "$seq still got X\n";
+    }
+    trimN(\$seq);
+    uncoverPolyA(\$seq);
+    next if (length($seq) < $config{minlen});
+    print OU $walker->header, "\n";
+    printSeq($seq, *OU);
+}
+
+sub trimN {
+    my $sref=shift; # reference to sequence
+    if ($$sref !~ /N/) { return; }
+    my $origseq=$$sref;
+    while ($$sref =~ s/^[ACGT]{0,10}N//
+        || $$sref =~ s/^[ACGT]{0,30}NN//
+        || $$sref =~ s/^[ACGT]{0,90}NNN//
+        ) { 
+        #print $$sref, "\n"; 
+    }
+    while ($$sref =~ s/N[ACGTN]{0,10}$// 
+        || $$sref =~ s/NN[ACGTN]{0,30}$//
+        || $$sref =~ s/NNN[ACGTN]{0,90}$//
+        || $$sref =~ s/NNNN[ACGTN]{0,270}$//
+        || $$sref =~ s/NNNNN[ACGTN]*$//) {
+        #print $$sref, "\n"; 
+    }
+    if ($DEBUG && length($origseq) != length($$sref)) {
+        print "before trimN:\n";
+        printSeq($origseq, *STDOUT);
+        print "after trimN:\n";
+        printSeq($$sref, *STDOUT);
+    }
+}
+
+sub uncoverPolyA {
+    my $sref=shift;
+# uncover polyT from 5' end
+    $$sref =~ s/^[ACGTN]{1,24}(T{12,})/$1/;
+    $$sref =~ s/^[ACGTN]{1,40}(T{17,})/$1/;
+    $$sref =~ s/^[ACGTN]{1,100}(?:GCCC|TCTC|CCGCC)(T{12,})/$1/;
+    $$sref =~ s/^[ACGTN]{1,80}[GC]{9,12}(T{12,})/$1/;
+    $$sref =~ s/^[ACGTN]{1,80}[GC]{9,12}TC(T{12,})/$1/;
+    $$sref =~ s/^[CGT]{1,7}(T{12,})/$1/;
+# polyA from 3' end
+    $$sref =~ s/(A{12,})[ACGTN]{1,5}$/$1/;
+    $$sref =~ s/(A{17,})[ACGTN]{1,35}$/$1/;
+    $$sref =~ s/([AN]{37,})[ACGTN]{1,75}$/$1/;
+    $$sref =~ s/([AN]{80,})[ACGTN]{1,375}$/$1/;
+    $$sref =~ s/(A{12,})GGGCGG[ACGTN]{1,500}/$1/;
+    $$sref =~ s/(A{12,})[GC]{10}TC[ACGTN]{1,500}/$1/;
+    if ($$sref =~ /([AN]{30,})/g) {
+        my $junk=$1;
+        my $idx=pos($$sref);
+        if ($idx > 450 && $junk =~ /N/) {
+            $$sref=substr($$sref, 0, $idx);
+        }
+    }
+
+    my @ntarray = split //, $$sref;
+    my $complexity = generateComplexityArray(\@ntarray, 28);
+    if (! defined $complexity) { return; }
+    my ($isjunk, $cpeaks, $apeaks, $apk, $cpk);
+    $cpeaks = findPeaks($complexity, 4);
+    if (@$cpeaks > 0) {
+        $cpk = maxPeakByArea($cpeaks);
+        if ($cpk->area < 30 || $cpk->width < 18) {
+            $isjunk=1;
+        }
+        else {
+            $isjunk=0;
+        }
+    }
+    else { 
+        $isjunk=1;
+    }
+
+    if ($isjunk) {
+        $$sref='';
+        return;
+    }
+##### PolyA
+    my $polyaArray = generateAPairArray(\@ntarray);
+    $apeaks = findPeaks($polyaArray, 0);
+    if (@$apeaks > 0) {
+        my $apk = maxPeakByArea($apeaks);
+        if ($apk->area < 40 || $apk->height < 4 || $apk->width < 5) {
+            #print LOG "no good polyA signal\n";
+        }
+        else { 
+# need to cut away sequence after pol2yA
+            if (!cutPolyAPeakTail($sref, \@ntarray, $complexity, $apk, *LOG)) {
+                if (@$apeaks > 5 && $cpk->width/length($$sref) < 0.3 
+                    && $cpk->peakStart > length($$sref)/2
+                    && @$cpeaks > 3) {
+                    $isjunk=1;
+                }
+                elsif (@$apeaks > 10 && $cpk->width < 100 
+                    && $cpk->height < 8) {
+                    $isjunk=1;
+                }
+                elsif (@$apeaks > 20) {
+                    $isjunk=1;
+                }
+                if ($isjunk) {
+                    $$sref='';
+                    return;
+                }
+# the remaining sequences may or may not be junk sequences.
+                # better run a blast of these to decide.
+                # I am running out of time so I will stop 
+                # here.
+                printSeq($$sref, *LOG);
+                printSeq(join('', @$complexity), *LOG);
+                print LOG join('', @$polyaArray), "\n";
+                print LOG "Complexity peaks\n";
+                foreach my $p (@$cpeaks) {
+                    $p->show(*LOG);
+                }
+                print LOG "PolyA peaks\n";
+                foreach my $p (@$apeaks) {
+                    $p->show(*LOG);
+                }
+                print LOG "Failed to cut tails\n";
+                print LOG "max peak by area: ";
+                $cpk->show(*LOG);
+            }
+        }
+    }
+    else {
+        #print LOG "no polyA peaks found\n";
+    }
+}
+
+sub isJunkSequence {
+    my $compref=shift;
+    my $peaks = findPeaks($compref, 4);
+    my ($pk, $rv);
+    if (@$peaks > 0) {
+        #print LOG "Complexity peaks\n";
+        #foreach my $p (@$peaks) {
+        #    $p->show(*LOG);
+        #}
+        $pk = maxPeakByArea($peaks);
+        if ($pk->area < 30 || $pk->width < 18) {
+            #print LOG "Sequence is junk\n";
+            $rv=1;
+        }
+        else {
+            $rv=0;
+        }
+    }
+    else { 
+        $rv=1;
+    }
+    return ($rv, $peaks);
+}
+
+

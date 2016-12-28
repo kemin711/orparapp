@@ -1,0 +1,215 @@
+#!/usr/bin/perl -w
+use strict;
+
+#my $file;
+#my %config=(junklen => 30);
+my @files;
+#my $prefix="SR";
+my $prefix="";
+my $count=1;
+#my $format='strand'; # other options noformat
+my $format='nostrand'; # other options noformat
+my $outfile='est.fas';
+my $i=0;
+while ($ARGV[$i]) {
+	if ($ARGV[$i] eq '-p') { $prefix=$ARGV[++$i]; }
+	elsif ($ARGV[$i] eq '-c') { $count=$ARGV[++$i]; }
+	elsif ($ARGV[$i] eq '-f') { $format=$ARGV[++$i]; }
+	elsif ($ARGV[$i] eq '-o') { $outfile=$ARGV[++$i]; }
+	#elsif ($ARGV[$i] eq '--np') { $prefix=''; }
+	else {
+        #$file=$ARGV[$i];
+        push @files, $ARGV[$i];
+		}
+		++$i;
+}
+## solexa files are usually fastq
+open OU, ">$outfile" or die $!;
+my $startCount=$count;
+foreach my $f (@files) {
+    if ($format eq 'strand') {
+        processStrandFormat($f);
+    }
+    else {
+        processFormat1($f);
+    }
+}
+print STDERR $count-$startCount+1, " total good sequences\n";
+
+# non-stranded just simple format
+sub processFormat1 {
+    my $file=shift;
+    open IN, "<$file" or die $!;
+## four lines for each line
+#@SNPSTER2_14_1_1_386_899
+#AAGAAGCAGCAGCTGCGTGGCTACCTGCCCGTGTTT
+#+SNPSTER2_14_1_1_386_899
+#hhhY\hhbhhOhhhhhhThCgXEa]cVQDVVRR?hh
+#@SNPSTER2_14_1_1_457_898
+#AGGCGATGAACGGGTCGTTGGCGGCCCCGGCGTTGT
+#+SNPSTER2_14_1_1_457_898
+#hhhhhbhhTWhhhhJ_hOhh>VhWKY@MJEIW@^G@
+
+    $_=<IN>;
+    while ($_) {
+        if (/^@/) {
+            my $seq=<IN>;
+            chomp $seq;
+            if (trimseq(\$seq)) {
+               print OU ">$prefix", $count++, "\n$seq\n";
+            }
+            $_=<IN>; $_=<IN>; $_=<IN>;
+        }
+        else {
+            die $_, " not id line\n";
+        }
+    }
+}
+
+sub processStrandFormat {
+    my $file=shift;
+# @1044:4:1:1066:14345/1
+# GGGACGCGAGACCCAGCCGGNCGAGATGAGCGGCGGACGGTCGTCNAGAGAATGAGAATGTAGACGGGAAGAGTCA
+# +
+# ab`bbbbbb`abbbaaaa__B`_`_^^`^\b_bbbb_b^bBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+# @1044:4:1:1066:14345/2
+# CGATACTCGAGTCTCCCCCTACTGCGCTCGACGAAACGACCGACGAACCTACTACCAAGCACCGCCGTGACGCTGC
+# +
+# bbbbbbbb_bb___bbbbWUbbbbbbbabab_]a_bb_bbb\\b]O_a`a``^IJa]]TZ_`bZ\b_W^[`^^Q[Z
+# @1044:4:1:1066:17128/1
+# CGGGTCAGGAGCTTTCCATCNTCGGCCAACAAGAGATCCATGATGNGCTGCATGTCGGTCTGGTAGTCGCAAGAGT
+# +
+# bbbababbabbbbbbbbbbbBbbbbaaa```abbbbbbbb^^\`^B`\```\```ab_b]bbb^bbY_b_]Z\V^O
+# @1044:4:1:1066:17128/2
+# CACCCCAAGGATATCCAGGCCTGGGACCCCACCGTCTCTCCCTGGAGCACCCTTTCCGAGGAGGAGAAGGCCGAGG
+    open IN, "<$file" or die $!;
+    my $oufile=fileStem($file) . ".fas";
+    open OU, ">$oufile" or die $!;
+    print STDERR "Working on $file ...\n";
+
+    $_=<IN>;
+    my ($head, $seq, $id, $lastid, $strand);
+    $lastid="";
+    /@(.+)\/(\d+)/;
+    $lastid=$1;
+    while ($_) {
+        if (/@(.+)\/(\d+)/) {
+            $id=$1;
+            $strand=$2;
+        }
+        else {
+            die "wrong header format $_\n";
+        }
+        if ($strand == 1 && $count % 1000000 == 0) {
+            print STDERR "working on # $count\n";
+        }
+        if ($id eq $lastid) {
+            $head=$prefix . $count . "_$strand";
+        }
+        else {
+            $head=$prefix . ++$count . "_$strand";
+        }
+        $seq=<IN>;
+        chomp $seq;
+        if (trimseq(\$seq)) {
+            print OU ">$head\n$seq\n";
+        }
+        $lastid=$id;
+        $_=<IN>; $_=<IN>; $_=<IN>; # this should read the header
+    }
+    close IN;
+    close OU;
+}
+
+sub fileStem {
+    my $file=shift;
+    if ($file =~ /(.+)\.[A-Za-z]+/) {
+        return $1;
+    }
+    else {
+        return $file;
+    }
+}
+
+# return 0 if all sequences are junk
+# return 1 if not empty sequence after trimming
+sub trimseq {
+    my $seq=shift;
+    $$seq =~ s/^N+//;
+    $$seq =~ s/N+$//;
+    if ($$seq =~ /^([ACGT]*?)N+([ACGT]+)/) {
+        if (length($1) < length($$seq)*0.5) {
+            $$seq=$2;
+        }
+    }
+    if ($$seq =~ /([ACGT]+)N+([ACGT]*?)$/) {
+        if (length($2) < length($$seq)*0.5) {
+            $$seq=$1;
+        }
+    }
+    if (length($$seq) < 28) {
+        return 0;
+    }
+    if ($$seq =~ /A{31,}/ || $$seq =~ /C{31,}/
+        || $$seq =~ /G{31,}/ || $$seq =~ /T{31,}/) {
+        #print STDERR "potential junk seq ", $$seq, "\n";
+        return 0;
+    }
+    return 1;
+}
+
+__END__
+
+=head1 NAME
+
+solex2fas - convert fastq file into fasta file
+
+=head1 SYNOPSIS
+
+ solex2fas -o short.fas short.fastq
+ solex2fas short.fastq   This will generate est.fas as output
+
+
+=head1 DESCRIPTION
+
+A FASTQ file normally uses four lines per sequence. Line 1 begins with a
+'@' character and is followed by a sequence identifier and an optional
+description (like a FASTA title line). Line 2 is the raw sequence
+letters. Line 3 begins with a '+' character and is optionally followed
+by the same sequence identifier (and any description) again. Line 4
+encodes the quality values for the sequence in Line 2, and must contain
+the same number of symbols as letters in the sequence.
+
+Illumina use log odd ratio of -10log(p/(1-p)), then use ASCII
+character to encode this quality. The higher leter are better.
+
+my filtering is not based on the quality score, but
+based on pattern. As you can see N may have high qualities
+which does not make sense.
+
+Illumina put stranded seq as <identifer>/1 <identifer>/2
+and they usually follow each other in the input file.
+The share the same identifier.
+
+=head2 Options
+
+The argument of the program is a list of fastq file names as input.
+The output will combine them.
+
+ -p <prefix> a short string to tag the sequence names
+    If not given then the program will use integer to names 
+    the sequences.
+ -c <counter start> is a starting number for naming the sequence
+    by integers.
+ -f <input format> [strand, nostrand] now has stranded or non-stranded
+    accepts two values: strand or nostrand. Default is nostrand.
+    Even the input file is stranded, you can still parse the files
+    as not stranded. Since combest can derive the direction of the 
+    EST sequence if they map over introns, and it can resolve chimera,
+    the strand information has nearly no value to combest. You can 
+    safely parts stranded as non-stranded.
+ -o <out file> output file name.
+
+
+
+

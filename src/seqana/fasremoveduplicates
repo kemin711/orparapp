@@ -1,0 +1,28 @@
+#!/usr/bin/perl -w
+
+# file: fasremoveduplicates
+# some times there are duplicated entries of sequence, 
+# this program remove it
+
+use SeqIterator;
+use Bioseq;
+use strict;
+
+my $i=0;
+my ($inputfile);
+while ($ARGV[$i]) {
+    $inputfile=$ARGV[$i];
+    ++$i;
+}
+
+my %seqids=();
+my $reader=SeqIterator->new($inputfile, 0);
+while (my $seq=$reader->next) {
+    my $id=$reader->getId;
+    if (! exists $seqids{$id}) {
+        print ">$id\n";
+        printSeq($seq);
+        $seqids{$id}=1;
+    }
+}
+print STDERR "all done\n";

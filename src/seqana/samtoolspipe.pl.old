@@ -1,0 +1,97 @@
+### perl ###
+
+use strict;
+use File::Basename;
+use Log::Log4perl;
+
+my $HOME=$ENV{HOME};
+my %config=(refseqfile => "/ngs/ngs16/zhouke/virology/hcvref.fas",
+   bowtie2bin => "$HOME/bin/bowtie2",
+   samtoolsbin => "/usr/local/bin/samtools",
+   workdir => "/d1/work/virology/benchmark",
+   seqlencut => 180,
+);
+# need to adjust binary accordingly on different hosts
+my @dirs=("Oct10S61_70", "S141_150R10_27");
+my $i=0;
+while ($ARGV[$i]) {
+   if ($ARGV[$i] eq "--help") {
+      usage();
+   }
+   else {
+      push @dirs, $ARGV[$i];
+   }
+   ++$i;
+}
+
+Log::Log4perl->init("$HOME/src/proj/seqana/samtoolspipe_log.conf");
+my $log=Log::Log4perl->get_logger("samtoolspipe");
+
+chdir $config{workdir};
+buildBowtie2Index();
+foreach my $d (@dirs) {
+   processOneDirectory($d);
+}
+
+##################################################
+
+sub processOneDirectory {
+   my $dir = shift;
+   my $pwd=`pwd`;
+   chomp $pwd;
+   chdir $dir;
+   #### do work here ###
+   # 1. filter fastq by length
+   my @fastqs=glob("*.fastq");
+   foreach my $q (@fastqs) {
+      my $outqfile = filterFastqByLength($q);
+   }
+
+   ### go back to original directory ###
+   chdir $pwd;
+}
+
+sub buildBowtie2Index {
+   my ($name, $path, $suffix) = fileparse($config{refseqfile}, ".fas");
+   my $rfname = $name . $suffix;
+   if ( ! -e $rfname) {
+      system("cp " . $config{refseqfile} . " $rfname");
+   }
+   my @files = glob("*.bt2");
+   if (@files == 0) {
+      system("bowtie2-build $rfname $name");
+   }
+}
+   
+sub filterFastqByLength {
+   my $inq = shift;
+   my ($ouq, $suffix)  = fileparse($inq, ".fastq");
+   $ouq .= "_cut" . $config{seqlencut} . ".fastq";
+   $log->info("filtering fastq by length 180 nt $inq to $ouq ...");
+   if (-e $ouq) {
+      $log->info("$ouq already exists, we are not doing it again");
+   }
+   else {
+      $log->debug("you need to write a fastq filter program for $inq");
+      system("fastqpick -l " . $config{seqlencut} . " -i $inq -o $ouq");
+   }
+   return $ouq;
+}
+
+
+sub runBowtie2 {
+}
+
+__END__
+
+=nead1 DESCRIPTION
+
+I am trying to develop a variant calling pipelie using the samtools.
+The first attempt will be for the HCV project.
+
+I have done some preliminary investigation, and my conclusion is that,
+the combinatine of bowtie2 and samtools is good for variant calling,
+but it is poor suited for the HCV type of projects.
+
+So this project at the intial stage is only for comparison only.
+

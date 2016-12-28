@@ -1,0 +1,14 @@
+#!/usr/local/bin/perl -w
+
+while (<>) {
+	if ( /^Sequence (.+)/ ) {
+		print ">$1\n";
+		for ($i = 0; $i<5; $i++) {  #need to modify this to 
+		#be more general
+			$_ = <>;
+		}
+	}
+	else {
+		print;
+	}
+}

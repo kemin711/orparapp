@@ -1,0 +1,193 @@
+Documentation
+
+
+stemloop algorithm output files:
+
+1. output file given on command line or automatically constructed by the
+   program *.slp
+	-- this file contains the exact decition by the algorithm. It is useful to
+	analyze the problems of this program or data. It slows down the algorithm by
+	10x, and we are still leaving it.  When the algorithm is mature enough we
+	will remove it.
+
+2. refDoubleHitdcount.tab
+  Contains the exact stem loop where the top/bottom sequences are differnt and
+  both match to library sequences. This file will be useful in helping the
+  design of better libraries.
+
+3. stemloop.summary
+  Contain counts in different caetgories.
+  alnboth: alighment to both left and right flank sequence with identity above
+	        the identity cut of such as 72% 
+  alnleft: sequence did not have any sequence identity to the right flank.
+  alnright: only align to right flank but not left flank. There should be very
+            few of this kind, and they more likely to be caused by realy bizar
+				behaviors of the sequencing machine, such as jumping to a different
+				cell. Too much of this kind is bad.
+  junk: barbage sequence
+  tooshort: matched at least one flank, and the total hairpin sequence is
+	         shorter than the stem. The 5A's at the end of left flank in the
+				version 2 design is very bad for this.  We will have large number
+				of this kind because the quality of the reads drop dramatically
+				after 3 or more A or T's.
+  total sequences: is the total input sequences.
+  match2: is the number of unique combination of two matches.
+  match2Sum: is the total number of stemloops matching two library sequences.
+       One pair of matching-2's may have more than one count.
+  match: total number of library sequences matched.
+  matchSum: total number of hits to the library. This number divided by match
+       is the coverage of the library. For exampl 3395915/35649 in on run has a
+		 coverage of the library 95x on average.
+  nomatch: the number of library sequences that does not match any stemloop sequence.
+  nomatchInput: number of unique input stemloop that does not match any library
+       sequences. Either synthesis of sequencing error could have caused the
+		 existence of this category.  469671
+  nomatchInputSum: total number of stemloop count. This number is printed as a
+       negative number to distinguish it from the matchsum. One stemloop in
+		 nonmatchInput may have multiple counts. The coverage of this category
+		 should be lower than the match category.  For example,
+		 -862,618/469,671=1.8 is much lower than 95. The coverage is propertional
+		 to the sequencing error and synthesis rates.
+  match_miss1 35853
+  matchSum_miss1 3644482
+  nomatch_miss1  number of library sequences that did not match any input
+	    sequence after running the mismatch algorithm
+  nomatchInput_miss1 number of unique input sequences that did not match library
+       sequence.
+  nomatchInputSum_miss1   -614051
+
+4. refcount.tab
+	The exact count for libarary sequence (positive) and novel input sequence
+	not in library (negative number)
+
+5. refcount_miss1.tab
+	Sequences that are different from a library sequence by one nucleotide are
+	considered as 'true' hits.  Kind of better cheating a little bit.
+	These are caused mainly by sequencing error or synthesis error.
+
+6. numhits_distribution.tab
+   Number of hits and count.  Negative number is for non-library sequences.
+	This distribution should be extreme-value distribution and should be double
+	exponential distribution.
+
+7. insertlencomplete.tab
+   insert length (hairpin length after removing flanking regions) distribution.
+	The 48 nt length should be the peak. This is the design length of the
+	hairping library.  We tend to have more 47 than 48 nt, which could be caused
+	by the tendency of Ion Torrent sequencing platform to under count. There are
+	some seconary peaks after 48 nt, such as 85, 94 (<2*48), 146 (> 3x48).
+	A few negative number are due to deleteion in the flanking sequences. The
+	sequence probably went through some recombination or rearrangement.
+
+8. insertlenpartial.tab
+  Insert length for partial sequences that has only one of the flanks.
+  5 nt is the peak, indicating difficulty sequencing through the hairping
+  structure.
+
+9. QCInfo.tab
+  This file contains the left, right, and stem, identity, then stem length,
+  followed by count.  This is a multiple dimention count from different
+  factors. This table contains the information about how the sequence reaction
+  has proceeded through the stem.
+
+
+
+Barcode errors:
+
+leftside x 2GY1G:00033:00090 
+identity=0.923 
+1         11        21        31        41        50        60   
++         +         +         +         +*******  +         +         
+CCGTAACTTGAAAGTATTTCGATTTCTTGGCTTTATATATCGATGT-AAAAGGACGAAACACCGG
+|||||||||||||||||||||||||||||||||||||||||  |||  |||||||| ||||||||
+CCGTAACTTGAAAGTATTTCGATTTCTTGGCTTTATATATC-TTGTGGAAAGGACG-AACACCGG
++         +         +         +         +         +         +         
+1         11        21        31        41        50        59   
+
+rightSide x 2GY1G:00033:00090
+identity=0.966 
+2         12        22        32        41        51      
++         +         +         +         +         +         +         
+TTTTGAATTCTCGACCTCGAGACAAATGGCAGTATTC-ATCCACAAGATCGGAAGAGC
+||||||||||||||||||||||||||| ||||||||| ||||||||||||||||||||
+TTTTGAATTCTCGACCTCGAGACAAAT-GCAGTATTCGATCCACAAGATCGGAAGAGC
++         +         +         +         +         +         +         
+112       122       132       141       151       161     
+
+Stemloop
+identity=0.958 
+ 1         11        21  
+ +         +         +     
+ GCAACAGTCCTTCGTACGGATCTC
+ ||||||||||||||||| ||||||
+ GCAACAGTCCTTCGTACAGATCTC
+ +         +         +    
+ 1         11        21  
+
+found exact hit
+
+
+
+Input file default name: rawlib.basecaller.bam
+Reference file.
+
+Output stemloop.summary
+
+The following is the output for
+/home/zhouke/work/nextgen/shrna/shRNA_2_2_8ul_044
+
+alnboth  2095810  (total decent sequence 3,885,666)
+alnleft  1789024
+alnright 832
+junk  3036
+tooshort 644934
+total sequences   4533636
+nomatchLibrarySeq 11860
+nomatchInputSeq   367564
+nomatchInputSeqSum   -567492
+match 43911
+matchSum 2033551
+match2   40
+match2Sum   84
+
+
+============ total 55,771 library sequences ===========
+
+Out of toal 55,771 library sequences, 11,860 had no match, 43,911 of library
+sequence matched to 2,033,551 input sequences that is 53% of decent sequences. 
+The coverage for the mapped sequence is 46.3x.
+
+
+There are 40 stem-loop that had different sequences for the top and bottom
+half, and mapped to two different library sequences.  This indicates the short
+distance for a few library sequences.  This is a small number. 
+
+There are 367,564 unique input sequences (representing 567,492 total sequences)
+that are not mapped to any library sequence.  The coverage of this unmapped
+input sequence is only 1.5x, which indicate their random nature.  If we count
+one mis-match to library sequence as match (this feature is not implemented in
+the program yet), then about 5-10% more library sequence will also map. 
+
+
+Output Files:
+
+refcount.tab 
+	two columns:
+	library_or_input_sequence    count
+
+Negative numbers for counts are for number of times the input sequence occurs in
+the experiment and there is no match to the library sequence.
+Zero means that the library sequence was not found in this project.
+Positive number means the number of times this library sequence was found in
+the experiment.
+
+The refDoubleHitcount.tab file contains stemloop sequences that are different
+between the top and bottom sequence of the stem-loop (usually by one base). The
+count is the number of time this occurs.  This could reflect the systematic
+error by the Ion Torrent technology when sequecing the bottom and top strands
+of the same sequence. Or it could be random error arriving from PCR, synthesis,
+etc.  
+
+
+
+

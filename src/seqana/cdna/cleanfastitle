@@ -1,0 +1,77 @@
+#!/usr/bin/perl -w
+
+# usage: cleanfastitle infile > outfile
+# clean the jgi title line
+# >jgi|JGI_XYM9991.fwd| JGI_XYM9991.fwd => >jgi|JGI_XYM9991.fwd
+# or
+# >gi|7413258|gb|AW652012.1|AW652012 832002F09.y1 C. reinhardtii CC-125 nutri ...
+# into 
+# >EST832002F09.y1
+if (scalar(@ARGV) < 1) { 
+    usage(); 
+}
+
+my $a=0;
+my ($infile, $outfile);
+while ($ARGV[$a]) {
+    if ($ARGV[$a] eq '-o') { $outfile=$ARGV[++$a]; }
+    else {
+        $infile=$ARGV[$a];
+    }
+    ++$a;
+}
+if (!$outfile) { $outfile = $infile . ".ntl"; }
+open IN, "<$infile" or die $!;
+open OU, ">$outfile" or die $!;
+
+my $counter=1;
+my $cnt=0;
+while (<IN>) {
+    if ($_ && /^>/) {
+        ++$cnt;
+        if (/\|/) {
+            chomp;
+            if (/^>gi\|\d+\|gb\|.+\|[A-Z0-9]+ (\d.+) (.+)$/) {
+                $_ = ">EST$1 $2\n";
+            }
+            elsif (/^>gi\|\d+\|gb\|.+\|[A-Z0-9]+ ([A-Za-z]{1,7}\d+) (.+)$/) {
+                $_ = ">$1 $2\n";
+            }
+            elsif (/^>jgi\|(JGI_[A-Z0-9]+\.(?:rev|fwd))/) {
+                $_= ">$1\n";
+            }
+            else {
+                s/jgi\|(.+)\| \1/$1/;
+                #>gi|115602749|gb|EG034976.1|EG034976 UI-EH-IJ0-abu-a-10-0-UI.s1 UI-EH-IJ0
+                s/>gi\|(\d+)\|.+/>gi$1/;
+                $_ .= "\n";
+            }
+        }
+        elsif (/-/ || length($_)>20) {
+            $_ = ">EST" . $counter++ . "\n";
+        }
+        elsif (length($_)>30) {
+            if (/^>(.+) (.+)/) {
+                #>WPAEhux1516F2QuadA1_A01_430277_A1_001.ab1
+                my $id=$1;
+                if (length($id)>20) {
+                    $_ = ">EST" . $counter++ . "\n";
+                }
+            }
+            else {
+                die $_, " not considered\n";
+            }
+        }
+        else {
+# normal header
+        }
+    }
+    print OU $_ if ($_ && !/^\s*$/);
+}
+print STDERR "$cnt sequences processed.\nDone\n";
+##################################################################################
+
+sub usage {
+    print STDERR "Usage: cleanfastitle <infile> > <outfile>\n";
+    exit(1);
+}

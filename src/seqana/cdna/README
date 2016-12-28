@@ -1,0 +1,8 @@
+uniqueshortseq 
+
+is a simple program to remove junk sequences from Illumini reads.
+
+This program will also remove duplicated reads. And reads that 
+are mostly repeasts such as All As.
+
+Next version should implement contained sequences removal.

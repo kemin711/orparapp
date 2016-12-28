@@ -1,0 +1,57 @@
+# we are using gnu make here
+include ../../common.mk
+
+DEBUG=-O3
+
+CXXFLAGS+= $(DEBUG) -Wall -std=c++11 -I$(KZINCLUDEDIR)
+LDFLAGS=-L$(KZLIBDIR) -lkemin
+
+#INSTALL=/usr/bin/install
+scripts=piecefasta sephumangb vrtsep breakFasfile splitnr
+
+.PHONY: update all install clean
+
+#bindir=$(PREFIX)/bin
+binary= seqsep seqdiv rmseqbyid fastapick fastadiscard
+
+all : $(binary) update
+
+install :
+	$(INSTALL) ${binary} ${scripts} ${BINDIR}
+
+seqsep : seqsep.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+rmfrgss : rmfrgss.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+estsep : estsep.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+picknewseq : picknewseq.o version.o
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+seqdiv : seqdiv.o nameoutfile.o
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+rmseqbyid : rmseqbyid.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	$(INSTALL) $@ $(BINDIR)
+
+fastapick : fastapick.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	$(INSTALL) $@ $(BINDIR)
+
+fastadiscard : fastadiscard.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	$(INSTALL) $@ $(BINDIR)
+
+
+# it looks that sepgborg program has been lost
+#
+update : $(scripts)
+	$(INSTALL) $? ${BINDIR}
+	touch update
+
+clean :
+	-rm *.o ${binary}

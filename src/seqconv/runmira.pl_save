@@ -1,0 +1,125 @@
+#* perl *#
+
+use strict;
+
+#my $inputseq = "bar2.fastq";
+my $inputseq = $ARGV[0];
+
+my @trimParameters=( [4,20], [4,19], [5,20], [5,19], [6, 20], [6,19] );
+my $cut_site="gacggatcgggagatctcccgatcccctatggtgcactctcagtacaatctgct";
+
+my $cutfiles = trimsequences($inputseq);
+print STDERR "Need to work on the following jobs: ", join(', ', @$cutfiles), "\n";
+foreach my $cf (@$cutfiles) {
+    my $configFile = writeMiraConfigFile($cf);
+    my $status = runMira($configFile);
+    my $frac = 0.9;
+    while ($status == 1 && $frac > 0.01) {
+        print STDERR "trying $frac ...\n";
+        my $partfile = $cf;
+        my $percent = int(100 * $frac);
+        $partfile =~ s/\.fastq/$percent.fastq/;
+        $configFile = writeMiraConfigFile($partfile);
+        if (-f "$configFile.done") {
+            print STDERR "$configFile done before, not repeating\n";
+            $frac -= 0.1;
+            next;
+        }
+        system("cpfasqpart -p $frac -o $partfile $cf");
+        $status = runMira($configFile);
+        $frac -= 0.1;
+    }
+
+}
+print "Done.\n";
+
+sub trimsequences {
+    my @cutfiles;
+    if (-f "CUT.done") {
+        print "trim and cut has been done before, not repeating\n";
+        @cutfiles=`ls *cut.fastq`;
+        chomp @cutfiles;
+        return \@cutfiles;
+    }
+    my $infile = shift;
+    my ($outfile, $cutfile);
+    foreach my $param (@trimParameters) {
+        my $info = `trimfastq -i $infile -w $param->[0] -c $param->[1]`;
+        if ($info =~ /written to (.+)$/m) {
+            $outfile = $1;
+        }
+        else {
+            die "$info has no output file name\n";
+        }
+        print "result written to $outfile\n";
+        my $summary = `linearize -s $cut_site $outfile`;
+        if ($summary =~ /written to (.+)$/m) {
+            $cutfile = $1;
+        }
+        else {
+            die "output from linearize is wrong: $summary\n";
+        }
+        push @cutfiles, $cutfile;
+    }
+    system("touch CUT.done");
+    return \@cutfiles;
+}
+
+=head2 runMira
+
+Will run using partial input if too much, until output good
+
+=cut
+sub runMira {
+    my $conf = shift;
+    if (-f "$conf.done") {
+        print STDERR "mira job $conf done before, not repeating\n";
+        return 1;
+    }
+    my $logfile = $conf . ".log";
+    print STDERR "running mira with $conf ...\n";
+    system("mira $conf > $logfile");
+    if ($?>>8) {
+        my $lastLine = `tail -1 $logfile`;
+        chomp $lastLine;
+        if ($lastLine eq "Ending the assembly because the maximum ratio has been reached/surpassed.") {
+            print STDERR "Too much input, we are going to try to use less\n";
+            system("touch $conf.done");
+            return 1;
+        }
+        else {
+            die "Failed to run with $conf\n";
+        }
+    }
+    print STDERR "log file: $logfile\n";
+    system("touch $conf.done");
+    return 0;
+}
+
+sub writeMiraConfigFile {
+    my $fileName = shift;
+    my $stem;
+    if ($fileName =~ /(.+)\.[a-z]+$/) {
+        $stem = $1;
+    }
+    else { $stem = $fileName; }
+    my $configFile = $stem . ".conf";
+    if (-f $configFile) {
+        print STDERR "configFile exists not writting $configFile\n";
+        return $configFile;
+    }
+
+    my $content=<<ENDS;
+project = $stem
+job = genome,denovo,accurate
+parameters = -GENERAL:number_of_threads=4
+readgroup = Shotgun
+data = $fileName
+technology = iontor
+parameters = COMMON_SETTINGS -AS:automatic_repeat_detection=off IONTOR_SETTINGS -AS:mrl=17
+ENDS
+    open OU, ">$configFile" or die $!;
+    print OU $content;
+    close OU;
+    return $configFile;
+}

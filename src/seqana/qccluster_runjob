@@ -1,0 +1,39 @@
+#!/bin/sh
+
+dir="/db/cluster"
+dirs=`ls -d clusterpepdir*`
+#dirs="clusterpepdir1 clusterpepdir2 clusterpepdir3 clusterpepdir4"
+
+for d in $dirs
+	do
+		cd $d
+		#numpep=`ls *.pep| sed 's/.pep//' | wc -w`
+		#numaln=`ls *.aln| sed 's/.aln//' | wc -w`
+		#numcw=`ls *.cw| sed 's/.cw//' | wc -w`
+
+		ls *.pep| sed 's/.pep//' > xx1 
+		ls *.aln| sed 's/.aln//' > xx2
+		ls *.cw| sed 's/.cw//' > xx3
+		numpep=`cat xx1 | wc -w`
+		numaln=`cat xx2 | wc -w`
+		numcw=`cat xx3 | wc -w`
+
+		if [ $numaln -lt $numpep ]; then
+			echo Not all clustalw job done in $d
+			echo pep $numpep aln $numaln
+			let diff=${numpep}-${numaln}
+			diff xx1 xx2
+			echo $diff missed
+			echo
+		fi
+		if [ $numcw -lt $numpep ]; then
+			diff xx1 xx3
+			echo Not all dialign job done in $d
+			echo pep $numpep dia $numcw
+			let missed=${numpep}-${numcw}
+			echo $diff missed
+			echo
+		fi
+		rm xx1 xx2 xx3
+		cd ..
+	done

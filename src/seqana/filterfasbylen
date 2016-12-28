@@ -1,0 +1,21 @@
+#!/usr/bin/perl -w
+use strict;
+use Bioseq;
+use SeqIterator;
+my ($minlen, $maxlen);
+$minlen=400;
+$maxlen=1200;
+
+my $file=$ARGV[0];
+my $reader=SeqIterator->new($file, 0);
+my $seq;
+while ($seq=$reader->next) { 
+    if (length($seq) < $minlen || length($seq) > $maxlen) {
+# discard
+    }
+    else {
+        $reader->writeFas();
+    }
+}
+
+

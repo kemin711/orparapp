@@ -1,0 +1,175 @@
+General documents for the plasmid assembly project.
+
+Preparation
+Moving data from sequence producer to assembly machine.
+
+	Sequence Producer: DKQF7R1 IP=140.176.80.217
+		ionadmin/ionadmin has sudo previlege
+	Test machine: europa, my desktop
+
+A. To login to the machine, I have established ssh key mechanism
+	ssh ionadmin@140.176.80.217 to get admin previlege
+	For reading data use regular user.
+	ssh 140.176.80.217
+
+B. The output of the results are located at:
+	/results/analysis/output/Home
+	I have used this directory as input.
+   /results/analysis/output/Home/Auto_user_SN1-19-full_length_clone_samples_36_041/basecaller_results
+
+	Actually there is another directory from earlier sequence run.  I presume
+	that the earlier result was bad and should not be used.
+	/results/analysis/output/Home/Auto_user_SN1-18-full_length_clones_35_037
+
+	I am using this set of data for testing my pipeline.
+
+I used a single scp command copied the files over to europa.
+These files have very long names, I am making it shorter.
+
+C. I wrote a disposible script to rename these insanely long file names to
+something that is more readable: 
+	renamelong.sh
+
+D. The length information about each file. I wrote another disposable scripts
+statall.sh to get length statistics. It is stored in file 
+	lengthStat.tab file.  The content
+
+bar#  avg      std        n
+================================
+	1	176.45	82.7818	196093 # has natural break, need trim but no linearize
+	2	161.923	78.9052	159344 # both cut and uncut will produce a single assembly
+	3	163.539	71.4214	10730 # no need to trim or linearize, has break
+	4	147.707	62.9093	80831 # run at border line 100% produce single assembly
+	5	169.281	82.6765	207160 # done with no problem.
+	6	163.408	80.7495	172866
+	7	168.351	82.6135	190585
+	8	167.342	86.8775	150545 # 6407
+	9	172.616	81.5412	178097
+	10	158.449	79.893	137903
+	11	161.091	78.1642	209376 # quality bad, most trim files are empty.
+	12	159.433	76.1243	114463 # 3.4 kb plasmid, 5000000 too high
+	13	145.153	66.8855	114624
+	14	141.958	64.3707	139788
+	15	166.689	79.0401	206989
+	16	153.873	65.6292	84860
+------------------------------------
+
+===========================================================
+Algorithm testing
+
+
+
+1. Count the number of sequences in the input, if belows certain number,
+ 	100,000, then
+	all will be used for assembly.
+
+2. Do assembly on the original sequences, with/without linearization
+	To find out it has break or not.
+
+	A. Both raw and linear assemble fine
+		if assembly fine, then use it without further trimming.
+		Bar3 is a test case for this.
+
+		a. there is a natural break in the raw read, no need for linearization
+			Bar3.
+			raw produces one contig. linearized produced two contigs.
+			This is the diagnostic feature.
+
+		b. need linearization
+
+	B. testing bar1. it has 196,093 reads. On europa with 4 processors
+		200 minutes still going
+		The produced numerous tiny contigs.  The new version no longer stop, but
+		proceed with really bad results.
+
+	
+
+2. If too many then carry cout trimming and spliting.
+
+bar2
+
+This one is strange. There are a lot.  
+For uncut, a tiny fractrion will produce a single assembly.
+Cut will not produce assembly. There is a natural cut.
+
+
+experiment with bar3
+
+aw status: 2	1
+There is no need to use less sequences
+assembled reads 8621
+Average total coverage: 144.43
+Longest contig: 9141
+Maximum coverage: 218
+Average consensus quality: 84
+Fraction of reads assembled: 0.803448275862069
+good contigs
+bar3_c1              9141 84 8126 144.43
+all sequences cut
+running mira with bar3cut.conf ...
+log file: bar3cut.conf.log
+assembled reads 8596
+Average total coverage: 141.54
+Longest contig: 9142
+Maximum coverage: 218
+Average consensus quality: 84
+Fraction of reads assembled: 0.801118359739049
+good contigs
+bar3cut_c1           9142 84 8017 141.54
+
+
+bar4 note
+
+Untrimmed and unlinearized gave result at fraction 0.6519 of total bar2.fastq
+trim419 100% produced one contig
+trim420 100% produced 2 contigs, since the bar4_trim420 has total 3,670,576
+bases less than the starting base of 4,000,000 we are not going to try with
+fewer bases.  There is no good fraction.
+trim519 100% produced one contig
+
+bar4cut also give one single contig at the specified cutting point.
+Strangely enough, the uncut raw sequence also produce a single contig, where
+the cut site is randomly introdued by Mira rather than the poly C track area.
+
+So mira is forcing the one-contig concept onto the linear plasmid.
+At least in this new version.
+
+bar8
+
+Reference length 6407   
+ bar8cut         6388   0.262 
+ trim419cut      6667   0.7455
+ trim420cut      6407   1.000
+ trim519cut      6764   0.6164
+ trim520cut      6409   0.8736
+ trim619cut      5392   0.5257
+ trim620cut      6672   0.7003
+
+ls bar8_trim419cut_[1-9]*.fastq
+
+
+bar12
+
+MGI4Z:02607:02729   2 duplicated twice.
+This batch has some problems. Most assembly failed.  Likely that the input
+sequence has some issues.
+Need to use this as an example to figure out what is bad.
+
+This plasmid has on 3.4 kb long, much shorter than the others, so we have to
+use 2000,000 total base input instead of 4 million. That's too much.
+
+===========================================================
+How to view the assembly
+
+tg_index -o mira.0 mira.CAF
+gap5 mira.0 &
+
+tg_index -o bar3.0 bar3_out.caf
+gap5 bar3.0 &
+
+Many files got duplicated sequence:
+
+Bar11 has one near the end.
+Bar10: Has two, both near the end.
+         *         20
+GCGCAGGGGCGCCCGGTTCTTTTTGTCAAGACCGACCTGTC

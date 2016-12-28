@@ -1,0 +1,59 @@
+/*
+            // AAAAATGG
+            // AAAAC-GG
+            else if (((int)i-5) > -1 && top.substr(i-5, 5) == "AAAAA"
+                  && bottom.substr(i-5,4) == "AAAA" && bottom[i-1] != 'A') {
+               bottom[i] = bottom[i-1];
+               //bottom[i-1] = 'A';
+               bottom[i-1] = 'a';
+            }
+            // TTCTTCTCATGCC
+            // TCATTC--ATGCC
+            else if (int(i)-3 > -1 && i+1 < top.length() 
+                  && top.substr(i-3, 5) == "TTCTC" 
+                  && bottom[i+1] == '-') {
+               bottom[i]=tolower(top[i]);
+               bottom[i+1] = tolower(top[i+1]);
+            }
+            // single gap in read
+            // NNNNNNNNNNNNN
+            // NNNNNN-NNNNNN
+            else if (int(i)-1 > -1 && i+1 < top.length() 
+                  && bottom[i-1] != '-' && bottom[i+1]  != '-') {
+               bottom[i] = tolower(top[i]);
+            }
+            // NNNNNNTCNNNNN
+            // NNNNNN--NNNNN
+            else if (top[i] == 'T' && i+1 < top.size() && top[i+1] == 'C'
+                  && bottom[i+1] == '-') {
+               bottom[i] = top[i];
+               bottom[i+1] = top[i+1];
+            }
+            // NNNNNNGANNNNN
+            // NNNNNN--NNNNN
+            else if (top[i] == 'G' && i+1 < top.size() && top[i+1] == 'A'
+                  && bottom[i+1] == '-') {
+               bottom[i] = top[i];
+               bottom[i+1] = top[i+1];
+            }
+            // NNNNNNTANNNNN
+            // NNNNNN--NNNNN
+            else if (top[i] == 'T' && i+1 < top.size() && top[i+1] == 'A'
+                  && bottom[i+1] == '-') {
+               bottom[i] = top[i];
+               bottom[i+1] = top[i+1];
+            }
+            // NNNNNNNNNNNNN
+            // NNNNNN--NNNNN
+            else if (int(i)-1 > -1 & i+1 < top.size()
+                  && bottom[i+1] == '-') {
+               bottom[i] = top[i];
+               bottom[i+1] = top[i+1];
+            }
+            //else {
+            //   cout << "Gap not fixed\n";
+            //   displayGap(top, bottom, i, gapw);
+            //}
+
+         }
+*/

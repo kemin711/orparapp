@@ -1,0 +1,21 @@
+The data source is on ion torrent machine:
+
+Ion Torrent Sequencer
+
+Machine name=DKQF7R1 IP=140.176.80.217
+ssh DKQF7R1
+
+admin user has sudo previlege.
+ionadmin/ionadmin
+zhouke/Chart4%Low, this is a static password, not in the LADAP system.
+
+/results/analysis/output/Home
+This directory contains all the runs
+
+R_2014_02_08_18_33_52_user_SN1-27-Jan_2014_shRNAsample2_high_percentage
+
+R_2014_02_07_19_47_30_user_SN1-26-Jan_2014_shRNAsample1_high_percentage
+
+R_2014_02_06_23_19_12_user_SN1-25-Jan_2014_shRNAsample2
+
+R_2014_02_06_17_04_20_user_SN1-24-Jan_2014_shRNAsample1

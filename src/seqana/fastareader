@@ -1,0 +1,263 @@
+#!/usr/bin/perl -w
+
+# a progra to read fasta result and out put tables
+# of results for clustering purposes
+# takes result from fastamany
+# note: fasta34_t changed its output format
+# this program is parsing the summary lines only.  I will
+# add a version to parse the actual alignment numbers
+
+$ECUT = 0.5;  #ecut should be a number that depends on the length
+# of the sequence
+$RELCUT = 0.4;  # relative to the top opt score
+#of the database
+$IDENCUT = 29; # %  for ungapped cut
+$BITSCUT = 24;
+$OVERLAPCUT = 0.35; # max(overlap/queryLen, overlap/targetLen) < cut
+@OUT_FIELD = qw(query target bits E identity ungapped_identity overlap q_start q_end t_start t_end query_len target_len);
+
+if (@ARGV == 0) { usage(); }
+$USEALN = 1;
+
+$i =0;
+while ($ARGV[$i]) {
+	if ($ARGV[$i] eq "-e") { $ECUT = $ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-r") { $RELCUT = $ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-ic") { $IDENCUT = $ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-bc") { $BITSCUT = $ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-oc") { $OVERLAPCUT = $ARGV[++$i]; }
+	else {
+		$inf = $ARGV[$i]; 
+	}
+	$i++;
+}
+
+$outfile = $inf;
+$outfile =~ s/\..+?$/\.tab/;
+open OUT, ">$outfile";
+open IN, "<$inf" or die "$inf  $!\n";
+
+if ($USEALN) { 
+	parseAln(); 
+	print STDERR "Output column definition:\n",
+		join("\t", @OUT_FIELD), "\n";
+}
+else { parseSummary(); }
+
+####################################################################3
+sub usage {
+	print "fastareader fasta_result -e E_cut default $ECUT\n";
+	print "-ic identity cut% default $IDENCUT\n";
+	print "-bc bits cut default $BITSCUT\n";
+	print "-oc overlap size cut default $OVERLAPCUT\n";
+	print join("\t", @OUT_FIELD), "\n";
+	die;
+}
+
+=begin 
+parseAln reads the alignment and extract information
+=cut
+sub parseAln {
+	$queryCnt=0;
+	$nohitCnt=0;
+	while (1) {
+		$queryCnt++;
+		$_ = <IN>;
+		while ($_ && !/ >/) { 
+			$previous = $_;          # record the line before query
+			$_ = <IN>; 
+		} # find the query seq
+		if (eof(IN)) { last; }             # done
+		chomp;
+		$query = substr($_, 2);
+		$_ = <IN>;
+		while (!/^!! No library sequences with/ &&
+				!/^The best scores are:/) {
+			$_ = <IN>;
+		}
+		if (/^!! No library sequences/) { 
+			$nohitCnt++;
+			next; 
+		}
+		# no hit go to the next query
+		while (!/^>>/) { $_ = <IN>; }  # read to the target line
+		($target, $targetLen) = isolateTarget($_);
+		if ($query eq $target) {  # self comparison discard
+			$_ = <IN>;
+			while (!/^>>/ && !/^Function used was FASTA/) { $_=<IN>; }
+			if (/^Function/) { 
+				$nohitCnt++;
+				print "$query got no hit\n";  
+				next; 
+			}
+			($target, $targetLen) = isolateTarget($_);
+		}
+		@arr = split(" ", $previous);
+		$queryLen = $arr[1];
+		#print "$query len: $queryLen -> $target len: $targetLen\n";
+		$_ = <IN>; # fasta score line
+		@farr = isolateFastaScore($_);
+		$_=<IN>;
+		#print "opt=$farr[2] Z-score=$farr[3] bit=$farr[4] E=$farr[5]\n";
+		@sarr = isolateIdentity($_);
+		if (discard(\@farr, \@sarr)) {
+			print "$query failed test: $farr[4]\n";
+			next;
+		}
+		$tophit=$farr[4];    # bits value
+		#$topiden=$sarr[1];  # not used yet
+		# bits, E, iden, nogap-iden, overlap, overlap-detail, querylen, targetlen
+		outputResult();
+		#print OUT "$query\t$target\t$farr[4]\t$sarr[1]\t$sarr[2]\t$sarr[3]\t$sarr[4]\t$queryLen\t$targetLen\n";
+		$_=<IN>;
+		while (!eof(IN)) {
+			while (!/^>>/ && !/^ FASTA searches a protein/ && !eof(IN)) { $_ = <IN>; }
+			if (eof(IN)) { last; }
+			if (/^ FASTA/) { last; }
+			($target, $targetLen) = isolateTarget($_);
+			$_=<IN>;
+			@farr = isolateFastaScore($_);
+			$_=<IN>;
+			@sarr = isolateIdentity($_);
+			if ($farr[4]/$tophit > $RELCUT) {
+				outputResult();
+				#print OUT "$query\t$target\t$farr[4]\t$sarr[1]\t$sarr[2]\t$sarr[3]\t$sarr[4]\t$queryLen\t$targetLen\n";
+			}
+		}
+		if (eof(IN)) { last; }
+	}
+	print "$queryCnt Query, $nohitCnt no hit\n";
+}
+########### to see the match is true or not ############
+sub discard {
+	my $f_r = $_[0];
+	my $s_r = $_[1];
+	# nogap identity
+	if ($s_r->[2] < $IDENCUT && ($s_r->[3]/$queryLen < $OVERLAPCUT 
+	               && $s_r->[3]/$targetLen < $OVERLAPCUT)) { 
+		return 1; 
+	}
+	#if ($f_r->[4] < $BITSCUT) { return 1; }
+	return 0;
+}
+sub isolateTarget {
+	my $tmp = $_[0];
+	$tmp = substr($tmp, 2);
+	$tmp =~ s/[\(\)]//g;
+	my @arr = split /\s+/, $tmp;
+	return @arr;
+}
+sub isolateFastaScore {
+#input line
+#initn: 355 init1: 355 opt: 355  Z-score: 275.4  bits: 59.8 E(): 1.4e-09
+	my $ln = $_[0];
+	$ln =~ s/^\s+//;
+#	$ln =~ s/([\w\-\(\)]+)?://g;
+#	my @farr = split /\s+/, $ln;
+
+	my @arr = split " ", $ln;
+	#number index: 
+	# 0       1   2     3   4    5      6      7      8     9    10   11
+	#initn: 355 init1: 355 opt: 355  Z-score: 275.4  bits: 59.8 E(): 1.4e-09
+	return ($arr[1], $arr[3], $arr[5], $arr[7], $arr[9], $arr[11]);
+}
+sub isolateIdentity {
+# a typical input line
+# Smith-Waterman score: 98;  21.384% identity (25.564% ungapped) in 159 aa overlap (14-164:2-142)
+	my $ln = $_[0];
+	my @arr = split /;\s+/, $ln;
+	$arr[0] =~ /(\d+)/;
+	my $score = $1;
+
+	$arr[1] =~ s/[A-Za-z;\(\)%]//g;
+	$arr[1] =~ s/^\s+//;
+	$arr[1] =~ s/[\-:]/ /g;               # split the overlap detail
+	@arr = split /\s+/, $arr[1];
+	return ($score, @arr);
+		#######  array content ###########################################
+		# @arr [0] Smith-Waterman score [1] 100.000% identity 
+		# [2] (100.000% ungapped) in [3] 367 aa overlap [4-7] (1-367:1-367)
+}
+# format of result
+# query, target, bits, E, Smith-Waterman_score identity ungapped_identity overlap q_start q_end t_start t_end
+
+sub outputResult {
+	# $farr[4] is bits, $farr[5] is E
+	my @sa = @sarr;
+	shift @sa; # discarding Smith-Waterman score
+	my $tmp = join("\t", @sa);
+	print OUT "$query\t$target\t", 
+		$farr[4], "\t", 
+		$farr[5], "\t$tmp\t$queryLen\t$targetLen\n";
+}
+	
+sub parseSummary {
+	$i = 0;
+	$orthoCnt = 0;
+	#while ($_ && /^ W\.R\. Pearson & D\.J\. Lipman PNAS/) {
+	while (1) {
+		$_ = <IN>;
+		while (!eof(IN) && !/^ W.R. Pearson & D.J. Lipman PNAS/) {
+			$_ = <IN>;
+		}
+		if (eof(IN)) { last; }
+
+		$i++;
+		$_ = <IN>; #the empty line
+		$_ = <IN>; #file name line nt$
+		$_ = <IN>; #query sequence name
+		chomp;
+		/.(.+):.+nt$/ or /.>(.+)/;  #later if for fasta33_t
+		$query = $1;
+		#print "processing $i  $query .... \n";
+		$_ = <IN>;
+		while (!/^The best scores are:/ && !/!! No library sequence/) {
+			$_ = <IN>;
+		}
+		if (/!! No library sequence/) { 
+			print "$query have no hit\n";
+			next;
+		}
+		$_ = <IN>;  # the first line of listing
+		@arr = separate($_, $name);  # get array of scores
+		if ($name eq $query) { # self comparison, discard
+			$_ = <IN>;
+			if (/^$/) { # empty line
+				next;
+			}
+			@arr = separate($_, $name);
+		}
+		if ($arr[-1] > $ECUT) { next; }
+		$orthoCnt++;
+		$top_opt = $arr[-3];  #use opt as measure
+		print OUT "$query\t$name\t$arr[-3]\t$arr[-2]\t$arr[-1]\n";
+		$_ = <IN>;
+		while (/\w+/) { #not empty line yet
+			@arr = separate($_, $name);
+			if ($arr[-3]/$top_opt > $RELCUT) {
+				print OUT "$query\t$name\t$arr[-3]\t$arr[-2]\t$arr[-1]\n";
+			}
+			$_ = <IN>;
+		}
+	}
+	print "$i sequences $orthoCnt have orthologues with E_CUT $ECUT\n";
+	print "Result written to file: $outfile\n";
+}
+
+sub separate {
+	#return name, and array of scores
+#U78078.sepiapterin reductase pseudogene        ( 790) [f]  627  113 4.1e-25
+# the ouput format from fasta34_t:
+#The best scores are:                                       opt bits E(2899)
+#CAC13116                                           ( 367) 2476  141 1.9e-34
+
+	#separate($ln, $name)
+	my $ln = $_[0];
+	$ln =~ /(\([ ]*\d+\))/;
+	my $pos = index($ln, $1, 21);
+	my $scorePart = substr($ln, $pos+1);  #after (
+	$_[1] = substr($ln, 0, $pos);
+	$_[1] =~ s/\s{2,}//;
+	my @arr = split /\s+/, $scorePart;
+	return @arr;
+}

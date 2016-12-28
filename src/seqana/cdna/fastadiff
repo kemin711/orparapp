@@ -1,0 +1,66 @@
+#!/usr/bin/perl -w
+
+use SeqIterator;
+use Bioseq;
+
+# compare two fasta files and pick unique sequences from each file
+my ($file1, $file2);
+#$file1 = "chlamy.raw.EST.fasta";
+$file1 = "raw.fasta";
+$file2 = "liang_232208.fasta";
+
+my @ids1 = `grep '>' $file1`;
+chomp @ids1;
+print scalar(@ids1), " sequences in $file1\n";
+@ids1 = map { s/^>//; $_ } @ids1;
+my @ids2 = `grep '>' $file2`;
+chomp @ids2;
+@ids2 = map { s/^>//; $_ } @ids2;
+print scalar(@ids2), " sequences in $file2\n";
+
+my (%id1, %id2);
+foreach my $id (@ids1) {
+    ++$id1{$id};
+}
+foreach my $id (@ids2) {
+    ++$id2{$id};
+}
+subtract($file1, $file2, \%id2);
+subtract($file2, $file1, \%id1);
+shared();
+
+###############################
+
+sub subtract {
+# one file1 but not in file2
+    my $f1=shift;
+    my $f2=shift;
+    my $refi2=shift;
+
+    my $outfile="IN_" . $f1 . "_NOT_IN_" . $f2;
+    open OU, ">$outfile" or die $!;
+    my $count=0;
+
+    my $reader=SeqIterator->new($f1, 0);
+    my ($seq, $id);
+    while ($seq=$reader->next) {
+        my $seqid =$reader->getPrimaryId;
+        if (! exists $refi2->{$seqid}) {
+            ++$count;
+            print OU ">$seqid\n";
+            printSeq($seq, *OU);
+        }
+    }
+    print "$count in $outfile\n";
+}
+
+sub shared {
+    my $count=0;
+    foreach my $id (@ids1) {
+        if (exists $id2{$id}) {
+            ++$count;
+        }
+    }
+    print $count, " common\n";
+}
+

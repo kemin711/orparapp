@@ -1,0 +1,572 @@
+#!/usr/bin/perl
+
+use strict;
+use File::Basename;
+use Log::Log4perl;
+use AlnVariantHelper;
+use Errno qw(EAGAIN);
+
+my $HOME=$ENV{HOME};
+# configure is for europa, Kraken will be separate
+my %config=(refseqfile => "/ngs/ngs16/zhouke/virology/hcvref.fas",
+   #bowtie2bin => "$HOME/bin/bowtie2",
+   #samtoolsbindir => "/usr/local/bin",
+   workdir => "/d1/work/virology/benchmark",
+   #workdir => "/net/kraken/ng14/zhouke/virology/benchmark",
+   seqlencut => 180,
+   bindir => "$HOME/bin",
+   numcpu => 4
+);
+
+# samtools and bcftools needs to be installed on 
+# kraken
+my $hostname=$ENV{HOSTNAME};
+if ($hostname eq 'kraken') {
+   $config{numcpu}=80;
+   $config{bindir}="$HOME/kraken/bin";
+   $config{workdir}="/ng14/zhouke/virology/benchmark";
+}
+else {
+}
+
+# need to adjust binary accordingly on different hosts
+my @dirs=("Oct10S61_70", "S141_150R10_27", "S171_180R10_25");
+#my @dirs=("Oct10S61_70");
+#my @dirs=("test");
+my $i=0;
+while ($ARGV[$i]) {
+   if ($ARGV[$i] eq "--help") {
+      usage();
+   }
+   elsif ($ARGV[$i] eq "-w" || $ARGV[$i] eq "--work-dir") {
+      $config{workdir}=$ARGV[++$i];
+   }
+   elsif ($ARGV[$i] eq "--clean") {
+      clean(\@dirs);
+   }
+   else {
+      push @dirs, $ARGV[$i];
+   }
+   ++$i;
+}
+
+Log::Log4perl->init("$HOME/src/proj/seqana/samtoolspipe_log.conf");
+my $log=Log::Log4perl->get_logger("samtoolspipe");
+
+chdir $config{workdir};
+my $bowtie2Ref= buildBowtie2Index(); # for bowtie2
+my $samRef = indexForSam(); # for samtools
+foreach my $d (@dirs) {
+   #FORK: {
+      my $pid=fork;
+      if ($pid) { # parent
+         #
+      }
+      elsif (defined $pid) { # child $pid == 0
+         processOneDirectory($d);
+      }
+      elsif ($! == EAGAIN) { # recoverable fork error
+         $log->error("recoverable forking error: EAGAIN!");
+         die "Not retrying fork!\n";
+         #sleep 10;
+         #redo FORK;
+      }
+      else {
+         die "cannot fork: $!\n";
+      }
+      #}
+}
+$log->debug("started jobs in " . join('|', @dirs));
+while (wait >= 0) {
+   $log->debug("waiting for jobs to finish");
+   sleep 40;
+}
+print "Done\n";
+
+##################################################
+
+=head2 processOneDirectory
+
+process all samples from one directory.
+
+=cut
+sub processOneDirectory {
+   my $dir = shift;
+   $log->info("working on directory $dir");
+   my $pwd=`pwd`;
+   chomp $pwd;
+   chdir $dir; # process inside a particular run directory.
+   #### do work here ###
+   my $bowtie2RefPath=$config{workdir} . "/$bowtie2Ref";
+   my $samRefPath = $config{workdir} . "/$samRef";
+   my @fastqs=glob("*.fastq");
+   @fastqs = grep { !/cut180/ } @fastqs;
+   foreach my $q (@fastqs) {
+      my ($outqfile, $numseq) = filterFastqByLength($q);
+      # for first round run use supplied reference
+      my $consensusFile=createConsensus($outqfile, $numseq, $bowtie2RefPath, $samRefPath, 0);
+      # bowtie2ref has no .fas extention, wherease samref does. This is the
+      # only difference.
+      my $bref = buildBowtie2IndexInplace($consensusFile);
+      my $sref = indexForSamInplace($consensusFile);
+      # final variant calling against consensus
+      my $bcfFile=createVariant($consensusFile, $outqfile, $numseq, $bref, $sref, 1);
+      $log->info("final bcfFile $bcfFile created");
+   }
+   ### go back to original directory ###
+   chdir $pwd;
+   $log->info("job in $dir done\n");
+}
+
+sub createConsensus {
+   my $fqfile=shift;
+   my $numq=shift;
+   my $bowtie2ref=shift;
+   my $samref=shift;
+   my $force=shift;
+
+   $log->debug("Running createConsensus with reads: $fqfile bowtie2ref: $bowtie2ref samref: $samref");
+
+   # 1. filter fastq by length
+   $log->debug("number of seq in fastq file $fqfile: $numq");
+   my $samfile = runOneBowtie2($fqfile, $bowtie2ref, $force); 
+   my $bamfile = convertSamToBam($samfile, 1); # for viriant input
+   my $tabfile = convertBamToTable($bamfile, 1);
+   my $bcffile = variantCall($bamfile, $numq, $samref);
+   my $alnfile = runAlnlocalmany($samref, $fqfile, 0);
+   $log->debug("bcffile $bcffile created");
+   #return $bcffile;
+   my $consensus= extractVCFConsensus($bcffile);
+   return $consensus;
+}
+
+sub createVariant {
+   my $reffile=shift; # fasta file, use consensus for this pipeline
+   my $fqfile=shift;  # fastq file, contains reads, already filtered
+   my $numq=shift;
+   my $bowtie2ref=shift;
+   my $samref=shift;
+   my $force=shift;
+   $log->debug("createing variant info from reference: $reffile reads: $fqfile bowtie2ref:  $bowtie2ref samref: $samref");
+
+   my $samfile = runOneBowtie2($fqfile, $bowtie2ref, 1); 
+   my $bamfile = convertSamToBam($samfile, 1); # for viriant input
+   my $tabfile = convertBamToTable($bamfile, 1);
+   my $alnfile = runAlnlocalmany($reffile, $fqfile, $force); # use filtered fastq
+   my $bcffile = variantCall($bamfile, $numq, $samref);
+   $log->info("bowtie2 alignment in table format into file $tabfile, Smith-Waterman aln into: $alnfile, variant into: $bcffile");
+   return $bcffile;
+}
+
+=head2 buildBowtie2Index
+
+ return the filename without the suffix ".fas"
+
+=cut
+sub buildBowtie2Index {
+   my ($name, $path, $suffix) = fileparse($config{refseqfile}, ".fas");
+   my $rfname = $name . $suffix;
+   if ( ! -e $rfname) {
+      system("cp " . $config{refseqfile} . " $rfname");
+   }
+   my @files = glob($name . ".?.bt2");
+   if (@files == 0) {
+      system($config{bindir} . "/bowtie2-build $rfname $name");
+   }
+   return $name;
+}
+
+=head2 buildBowtie2IndexInplace 
+
+ work in the current directory without 
+ copying
+
+=cut
+sub buildBowtie2IndexInplace {
+   my $fasfile = shift;
+   my $forceRun=1;
+
+   if ($fasfile !~ /\.fas$/) {
+      $log->fatal("input for bowtie2-build must be in fasta format!");
+      die "fasta file needed!\n";
+   }
+   if (!-e $fasfile || -z $fasfile) {
+      $log->fatal("you provided empty or non-existent fasta file: $fasfile");
+      die "$fasfile not exists or empty\n";
+   }
+
+   my ($name, $path, $suffix) = fileparse($fasfile, ".fas");
+   if ($path && $path ne "./") {
+      $log->debug("Path of file $fasfile $path");
+      die "you have provided a sequence not in the current directory: $fasfile\n";
+   }
+   my $rfname = $name . $suffix;
+   my $bt2pattern=$name . '.?.tb2';
+   my @files = glob($bt2pattern);
+   if (@files == 0 || $forceRun) {
+      system($config{bindir} . "/bowtie2-build $rfname $name");
+   }
+   return $name;
+}
+
+=head2 indexForSam
+ 
+ return the files name for the refseq file
+ not the final result. The final result is not mentioned by any program.
+
+=cut
+sub indexForSam {
+   my ($name, $path, $suffix) = fileparse($config{refseqfile}, ".fas");
+   my $rfname = $name . $suffix;
+   if ( ! -e $rfname) {
+      system("cp " . $config{refseqfile} . " $rfname");
+   }
+   my $idxf = $rfname . ".fai";
+   if (-e $idxf && !-z $idxf) {
+      $log->warn("fasta index $idxf for samtools exists, not repeating.");
+   }
+   else {
+      my $cmd=$config{bindir} . "/samtools faidx $rfname";
+      system($cmd);
+      if ($?>>8) {
+         $log->fatal("Failed to run $cmd");
+         die $!;
+      }
+   }
+   return $rfname;
+}
+
+sub indexForSamInplace {
+   my $fasfile = shift;
+   my $forceRun = 1;
+
+   my ($name, $path, $suffix) = fileparse($fasfile, ".fas");
+   my $rfname = $name . $suffix;
+   if ($path && $path ne "./") {
+      die "you should not provide a path for inplace indexing for sam: $fasfile\n";
+   }
+
+   if ( ! -e $fasfile || -z $fasfile) {
+      $log->fatal("you provided non-existent or empty fasta file $fasfile");
+      die "$fasfile not found\n";
+   }
+   my $idxf = $rfname . ".fai";
+   if (-e $idxf && !-z $idxf && !$forceRun) {
+      $log->warn("fasta index $idxf for samtools exists, not repeating.");
+   }
+   else {
+      my $cmd=$config{bindir} . "/samtools faidx $rfname";
+      system($cmd);
+      if ($?>>8) {
+         $log->fatal("Failed to run $cmd");
+         die $!;
+      }
+   }
+   return $rfname;
+}
+  
+=head2 filterFastqByLength
+
+Discard read <= 180 nt
+
+=cut
+sub filterFastqByLength {
+   my $inq = shift;
+   my ($ouq, $suffix)  = fileparse($inq, ".fastq");
+   $ouq .= "_cut" . $config{seqlencut} . ".fastq";
+   $log->info("filtering fastq by length 180 nt $inq to $ouq ...");
+   my $numseq=0;
+   if (-e $ouq && !-z $ouq) {
+      $log->info("$ouq already exists, we are not recreating it again.");
+      $numseq=`wc -l $ouq`;
+      if ($numseq =~ /^(\d+)/) {
+         $numseq = $1/4;
+         #$log->debug("$numseq fastq in file $ouq");
+      }
+      else {
+         $log->fatal("Failed to count number of fastq seq in file $ouq");
+         die "inproper output $numseq\n";
+      }
+   }
+   else {
+      my $cmd = $config{bindir} . "/fastqpick -l " . $config{seqlencut} . " -i $inq -o $ouq";
+      my $result = `$cmd`;
+      if ($result =~ /(\d+) fastq sequences picked/) {
+         $numseq = $1;
+      }
+      else {
+         $log->fatal("did not capture the number of fastq picked from $inq");
+         die "Failed to process fastqpick output\n";
+      }
+   }
+   #$log->debug("numseq before return $numseq");
+   return ($ouq, $numseq);
+}
+
+=head runOneBowtie2
+
+This will return the sam output file
+
+=cut
+sub runOneBowtie2 {
+   my $fastqfile = shift;
+   my $refseqpath = shift;
+   my $force= shift;
+
+   $log->debug("runOneBowtie2 input fastq: $fastqfile refseqpath: $refseqpath");
+
+   my $bowtie2bin=$config{bindir} . '/bowtie2';
+   my $refseqStem = getFileStem($refseqpath);
+   my ($base, $path, $suffix) = fileparse($fastqfile, ".fastq");
+
+   my $samoutFile = $base . '_' . $refseqStem . ".sam";
+   my $bowtie2Summary = switchExtension($samoutFile, ".bowtie2.summary");
+   my $numcpuToUse = $config{numcpu};
+   if ($numcpuToUse > 16) { # don't use too many 
+      $numcpuToUse = 16;
+   }
+   my $command = "$bowtie2bin -p " . $numcpuToUse 
+         . " -x $refseqpath -U $fastqfile -S $samoutFile"
+         . " 2>$bowtie2Summary";
+   if (-e $samoutFile && !-z $samoutFile && !$force) {
+      $log->info("sam output $samoutFile from command $command exists not redoing");
+   }
+   else {
+      system($command);
+      if ($?>>8) {
+         $log->fatal("Failed to run $command");
+         die "Faield $command";
+      }
+      $log->info("succesfully run $command");
+   }
+   return $samoutFile;
+}
+
+=head2 convertSamtToBam
+
+Not computatioally expensive, always redo
+
+=cut
+sub convertSamToBam {
+   my $sam = shift;
+   my $force = shift;
+
+   my $bam = switchExtension($sam, ".bam");
+   my $cmd = $config{bindir} . "/samtools view -b $sam -o $bam";
+   if (-e $bam && ! -z $bam && !$force) {
+      $log->warn("bam file $bam exists, not redoing the job");
+   }
+   else {
+      system($cmd);
+      if ($?>>8) {
+         $log->fatal("Failed to run $cmd");
+         die $!;
+      }
+      $log->info("succsfully run $cmd");
+   }
+   return $bam;
+}
+
+=head2 convertBamToTable
+ 
+ Bam is the aligned result from bowtie2.
+ This will convert it to tabular format for easy comparison.
+
+=cut
+sub convertBamToTable {
+   my $bam = shift;
+   my $force=shift;
+
+   my $tab = switchExtension($bam, "_bowtie2.tab");
+   $log->info("converting $bam to $tab");
+   if (-e $tab && ! -z $tab && !$force) {
+      $log->warn("tabular file from bam $bam exists, not redoing");
+   }
+   else {
+      my $cmd = $config{bindir} . "/bam2tab -o $tab $bam";
+      system($cmd);
+      if ($?>>8) {
+         $log->fatal("Failed $cmd");
+         die $!;
+      }
+      $log->info("successfully run $cmd");
+   }
+   return $tab;
+}
+
+=head2 runalnlocalmany
+
+This is under job control, so that not so many jobs will be lunched.
+
+=cut
+sub runAlnlocalmany {
+   my $reffile = shift;
+   my $fastqfile = shift;
+   my $force = shift;
+
+   my $refStem = getFileStem($reffile);
+   my $fastqStem = getFileStem($fastqfile);
+
+   my $alnfile = $fastqStem . "_" . $refStem . ".aln";
+
+   if (-e $alnfile && ! -z $alnfile && numberOfLines($alnfile) > 10 && !$force) {
+      $log->warn("Alignment result file $alnfile exists, and not redoing.");
+   }
+   else {
+      my $numalnJobs = getNumberOfJobs("alnlocalmany");
+      while ($numalnJobs > $config{numcpu}) {
+         $log->debug("$numalnJobs alnlocalmany running, you have " . $config{numcpu} . " cpu. You need to wait");
+         sleep 30;
+         $numalnJobs = getNumberOfJobs("alnlocalmany");
+      }
+      my $cmd = $config{bindir} . "/alnlocalmany -f $reffile -q $fastqfile -o $alnfile &";
+      $log->info("running command $cmd");
+      system($cmd);
+      if ($?>>8) {
+         $log->fatal("failed to run $cmd");
+         die ("Failed to run $cmd");
+      }
+   }
+   $log->info("Smith-Waterman alignment is in $alnfile");
+   return $alnfile;
+}
+
+sub getNumberOfJobs {
+   my $jobname=shift;
+   my @ps=`ps -ef`;
+   chomp @ps;
+   my @prog = map { my @arr=split /\s+/; basename($arr[7]); } @ps;
+   my @jobs = grep { /$jobname/ } @prog;
+   #$log->info(scalar(@jobs) . " jobs running. " . join('|', @jobs));
+   return scalar(@jobs);
+}
+
+=head2 variantCall
+
+call variant for one bam file derived from bowtie2 mapping output.
+
+ return the final bcf file.
+
+ the following command does not work any more
+ samtools mpileup -uf ref.fa aligned_sorted.bam | bcftools view -bvcg - > var.raw.bcf
+ bcftools view var.raw.bcf | vcfutils.pl varFilter -D100 > var.flt.vcf 
+
+ vcftools does not give you AF.
+
+=cut
+sub variantCall {
+   my $bam=shift;
+   my $numseq=shift;
+   my $refPath=shift;
+
+   my $sorted = substr($bam, 0, rindex($bam, '.')) . ".sorted";
+   #$log->debug("bamfile: $bam sorted bam: $sorted");
+   # the calling syntax for sort is strange!
+   # samtool sort bar1.bam bar1.sorted # will produce bar1.sorted.bam file!
+   my $cmd = $config{bindir} . "/samtools sort $bam $sorted";
+   system($cmd);
+   if ($?>>8) {
+      $log->fatal("Failed to run $cmd");
+      die $!;
+   }
+   # run mpileup
+   my $rawbcf = substr($bam, 0, rindex($bam, '.')) . "raw.bcf";
+   my $bcf = substr($bam, 0, rindex($bam, '.')) . ".bcf";
+   #my $refPath = $config{workdir} . "/$refseqName";
+   my $sortedBamFile = $sorted . ".bam";
+   # need -g or --BCF | -v or --VCF
+   # even using -v option, the samtools still putput binary format, there is a
+   # bug here.
+   my $pcmd = $config{bindir} . "/samtools mpileup -d $numseq -g -s -f $refPath -o $rawbcf $sortedBamFile";
+   $log->debug("running mpileup with command $pcmd");
+   system($pcmd);
+   if ($?>>8) {
+      $log->fatal("failed to run $pcmd");
+      die $!;
+   }
+   # produce text file $bcf is a text file
+   my $ccmd = $config{bindir} . "/bcftools call -A -o $bcf -m -P 0.005 $rawbcf";
+   system($ccmd);
+   if ($?>>8) {
+      $log->fatal("failed to run $ccmd");
+      die $!;
+   }
+   return $bcf;
+}
+
+sub switchExtension {
+   my $f = shift;
+   my $suffix = shift;
+
+   if ($f =~ /(.+?)\.[a-z]+$/) {
+      return $1 . $suffix;
+   }
+   else {
+      return $f . $suffix;
+   }
+}
+
+sub countFastq {
+   my $qfile = shift;
+   my $numq = `wc -l $qfile`;
+   if ($numq =~ /^(\d+)/) {
+      return int($1/4);
+   }
+   die "Failed to count fatq sequence in $qfile\n";
+}
+
+sub clean {
+   my $dirs = shift;
+   foreach my $d (@$dirs) {
+      chdir $d;
+      system("rm *.sam *.bam *.bcf *.bt2 *.fai *.aln *.tab *.fas");
+      if ($?>>8) {
+         die "Failed to do cleaning for $d!\n";
+      }
+      chdir "..";
+   }
+   exit 0;
+}
+
+sub numberOfLines {
+   my $fname=shift;
+   my $wcresult=`wc -l $fname`;
+   chomp $wcresult;
+   if ($wcresult =~/^(\d+) /) {
+      return $1;
+   }
+   die "Failed to get number fo lines in file: $fname\n";
+}
+
+__END__
+
+=nead1 DESCRIPTION
+
+I am trying to develop a variant calling pipelie using the samtools.
+The first attempt will be for the HCV project.
+
+I have done some preliminary investigation, and my conclusion is that,
+the combinatine of bowtie2 and samtools is good for variant calling,
+but it is poor suited for the HCV type of projects.
+
+So this project at the intial stage is only for comparison only.
+
+This program will be lanuched from the directory containing the following
+directory:
+
+   ("Oct10S61_70", "S141_150R10_27", "S171_180R10_25");
+
+=head1 SEE ALSO
+
+  compareswbowtie
+
+  Run the above program when this pipeline is done.
+
+=head1 VERSION
+
+
+  0.1 Design and implementing.
+
+=head1 AUTHOR
+
+Kemin Zhou

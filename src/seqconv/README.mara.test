@@ -1,0 +1,40 @@
+I am testing the new version of mira on kraken
+1. The lastest version on kraken stops the assembly with error message too much
+input even the same input or 100x the same input can be assembled with the
+binary on europa.  The problem is to figure out whenter something changed.
+
+2. Testing plan.
+	A. copy one of the input files from europa to kraken and run different
+		binaries.
+
+		input file: zhouke@europa[/d1/work/assembly/bar16
+		bar16_trim519cut_6197.conf
+		bar16_trim519cut_6197.fastq
+
+		copy these two files to
+		zhouke@europa[/d1/work/assembly/bar16]$ cp bar16_trim519cut_6197.conf
+		/net/kraken/ng10/kzassembly/testmira2
+
+
+		test directory: zhouke@kraken[/ng10/kzassembly/testmira2
+		(on europa the same directory is named
+		zhouke@europa[/net/kraken/ng10/kzassembly/testmira2)
+
+		input file copied from europa that has been shown to produce on single large
+		contig: 3693 nt, input coverage 897.08, quality 88, assembly coverage 819.59
+
+		bar16_trim519cut_6197.fastq
+	B. copy old mira binary from europa to kraken
+	zhouke@europa[/d1/work/assembly/bar16]$ which mira
+	zhouke@europa[/net/kraken/ng10/kzassembly/testmira2]$ mira_europa --version
+	mira_europa is a non-recognised program name of MIRA.
+	The programs SHOULD be named either
+	"mira", "miraconvert", "miramem", "mirabait"
+	Assuming 'mira'
+
+	4.0rc3 
+
+	C. copy mira from kraken default bin to here
+
+
+

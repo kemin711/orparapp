@@ -1,0 +1,118 @@
+#!/usr/bin/perl -w 
+# this is a program to compare a database against another database
+# the original fasta does not have function to do db-to-db comparsion
+
+#$program = "fasta34_t"; # depends on the version of fasta 
+$program = "fasta34"; # depends on the version of fasta 
+$ktup = 2;  # for protein use smaller ktup
+$OPT_SCORE = 10;             #Threshold score for optimization
+$keep = 50;              # number of outputs
+$E = 3;                # exp cut off
+$host = $ENV{'HOSTNAME'};
+$host =~ s/\..+//;
+
+if (@ARGV == 0) { usage(); }
+$i=0;
+while ($ARGV[$i]) {
+	if ($ARGV[$i] eq "-i") {  #input file with more than one seq
+		$inf = $ARGV[++$i];
+	}
+	elsif ($ARGV[$i] eq "-o") {  #output file with more than one seq
+		$outf = $ARGV[++$i];
+	}
+	elsif ($ARGV[$i] eq "-d") {  #database  one or more seq
+		$db = $ARGV[++$i];
+	}
+	elsif ($ARGV[$i] eq "-p") {  $program = $ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-k") {  $ktup = $ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-os") {  $OPT_SCORE = $ARGV[++$i]; }
+	elsif ($ARGV[$i] eq "-e") {  $E = $ARGV[++$i]; }
+	else {
+		die "$ARGV[$i] not accepted in this program\n";
+	}
+	$i++;
+}
+if (!$outf) { $outf = $inf . ".fasta"; }
+if (-f $outf) {
+	print "$outf exist, removed\n";
+	system("rm $outf");
+}
+#if ($program eq "fasta") { $program = "fasta33_t"; }
+
+$options = " -Q -H -c $OPT_SCORE -b $keep -d $keep -E $E -f 12 -g 1"; 
+$options = "$db $ktup $options";
+print "options for fasta:\n $options\n";
+
+open IN, "<$inf" or die "$! $inf";
+$tmpfile = $host . $$;
+$ln = <IN>;
+$i =0;
+$outfile = $outf;
+while (writetmp()) {
+	$i++;
+	if (($i % 5000) == 0) { 
+		print "$i sequence processed\n"; 
+		$seg = $i/5000;
+		$outfile = $outf . $seg;
+	}
+	system("$program $tmpfile $options >> $outfile");
+		#-c 1 optimize every sequence in a database 5x slower
+		#-b 5 number of sequenc scores to be shown on output
+		#-d 5 number of alignments to be reported 
+		#-f -17 Penalty for the first residue in a gap
+		#-g -3  Penalty for additional residues in a gap
+		#-H Omit histogram
+		#-Q Quiet (does not prompt for any input)
+		# -n force query to DNA
+}
+system("rm $tmpfile");
+print "All done. $i Sequences, result in $outf\n";
+
+###############################################################
+sub writetmp {
+	if (eof(IN)) {
+		return 0;
+	}
+	if ($ln =~ /^>/) {  #more sequences in the file
+		open OU, ">$tmpfile";
+		print OU $ln;
+		$ln = <IN>;
+		while (!eof && $ln !~ /^>/) {
+			print OU $ln;
+			$ln = <IN>;
+		}
+		close OU;
+		return  1;
+	}
+}
+
+sub writeSingleFile {
+	if (eof(IN)) {
+		return 0;
+	}
+	if ($ln =~ /^>/) {  #more sequences in the file
+		$tmpfile = substr($ln, 1);
+		chomp($tmpfile);
+		$tmpfile =~ s/[\s:\/]/_/g;
+		if (length($tmpfile) > 40) { 
+			$tmpfile = substr($tmpfile, 0, 39); 
+		}
+		open OU, ">$tmpfile";
+		print OU $ln;
+		$ln = <IN>;
+		while (!eof && $ln !~ /^>/) {
+			print OU $ln;
+			$ln = <IN>;
+		}
+		close OU;
+		return  1;
+	}
+}
+sub usage {
+	print "fastamany -i inputfile -o outputfile -d database\n";
+	print "\t-p program [fasta_version number] default $program\n";
+	print "\t-os optimization_score default $OPT_SCORE\n";
+	print "\t-k ktup[1-6] default $ktup\n";
+	print "\t-e E cutoff default $E\n";
+	die;
+}

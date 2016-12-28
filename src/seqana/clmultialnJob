@@ -1,0 +1,36 @@
+#!/bin/sh
+# for doing cluster multiple alignment
+# run this program in the directory
+
+#file: clmultialnJob
+
+wdir="/db/cluster1"
+
+if [ "$1" ]; then 
+ wdir=$1
+fi
+
+cd $wdir
+
+clusters=`ls -d clusterpepdir*`
+
+## do clustalw job
+for f in $clusters 
+	do 
+		echo working on clustalwmany $f ..........
+		cd $f
+		clustalwmany -d &
+		nice -19 clustalwmany -e 1000 &
+		clustalwmany -b 1001 
+		cd ..
+	done
+
+###### dialign all *.pep files
+for f in $clusters 
+do 
+	echo working on dialignmany $f ......
+	cd $f
+	nice -19 dialignmany -e 1000&
+	dialignmany -b 1001
+	cd ..
+done

@@ -1,0 +1,11 @@
+#!/usr/local/bin/perl -w
+
+#this program is used to convert gss files in fasta format
+#downloaded from GB
+
+$_ = <>;
+while ($_ && /^>/) {
+	/clone (\w+)/;
+	$clone = $1;
+	$cosmid = substr($clone, 0, 6);
+

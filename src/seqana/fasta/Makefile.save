@@ -1,0 +1,65 @@
+include ../../common.mk
+
+PERLMODULES := Fastaseq.pm FastaReader.pm FastaseqQual.pm
+
+
+DEBUG=-O3
+#DEBUG=-g
+ifdef GCCLIBDIR
+   CXXFLAGS=$(DEBUG) -I$(KZINCLUDEDIR) -I$(mysql_INCLUDEDIR) -I$(mysqlpp_INCLUDEDIR) \
+		 -I$(bamtool_INCLUDEDIR) -I$(BOOSTHEADER) -I$(GCCHEADER) -std=c++11
+   LDFLAGS=-L${KZLIBDIR} -L$(BOOSTLIBDIR) -L$(bamtool_LIBDIR) -L$(GCCLIBDIR) -lkemin
+else
+   CXXFLAGS=$(DEBUG) -I$(KZINCLUDEDIR) -I$(mysql_INCLUDEDIR) -I$(mysqlpp_INCLUDEDIR) \
+					 -I$(bamtool_INCLUDEDIR) -I$(BOOSTHEADER) -std=c++11
+   LDFLAGS=-L${KZLIBDIR} -L$(BOOSTLIBDIR) -L$(bamtool_LIBDIR) -lkemin
+endif
+
+binary= uniqueseq fastabund fastaleninfo combineseq
+scripts := text2fas buildhcvref listfaslen
+
+.PHONY: all update
+
+# for web applications
+all : $(binary) pmod update
+
+update : $(scripts)
+	cp $? $(BINDIR)
+	touch $@
+
+pmod : $(PERLMODULES)
+	cp $? $(PERLLIBDIR)
+	touch pmod
+
+uniqueseq : uniqueseq.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) -lkemin
+	cp $@ $(BINDIR)
+
+fastabund : fastabund.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	cp $@ $(BINDIR)
+
+fastaleninfo : fastaleninfo.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	cp $@ $(BINDIR)
+
+combineseq : combineseq.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	cp $@ $(BINDIR)
+
+install :
+	cp $(PERLMODULES) $(PERLLIBDIR)
+	cp $(binary) $(BINDIR)
+
+# not building the java application 
+#.SUFFIXES : .class .java
+
+#.java.class :
+#	javac $<
+#
+#javap : Region.class ExtractEnd.class RegionStr.class RegionInt.class ModmRNAvalidate.class 
+#	touch javap
+#	cp $? ${JAVACLASSDIR}
+
+clean :
+	-rm *.o ${binary}

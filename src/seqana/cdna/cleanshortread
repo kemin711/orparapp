@@ -1,0 +1,125 @@
+#!/usr/bin/perl -w
+
+use SeqIterator;
+use strict;
+
+# make the name of the short read reasonable, they are usually
+# in garbage format such as 
+# >HWI-EAS313:6:1:2:418#0/1, many programs will not like this.
+#CTNGAGGCCAAACCACAGGAAGCCGCTGTTGAGGCAGNNNNN
+#>HWI-EAS313:6:1:2:1128#0/1
+#CANTGATGTCTTTAGTCTCGAGGGAAAGTCTGCCGAGACNNN
+#>HWI-EAS313:6:1:2:616#0/1
+#CCNGGGTCTGGTTCCGCTCCATTCTGGCCCCCTTGGTTGNNN
+#>HWI-EAS313:6:1:2:1461#0/1
+#GAAGTTTCGGGCAGGTGCTGATAAGGTCCCTGTGGGCAGNNN
+
+# we will trim N and use lower cutoff 
+my $i=0;
+my ($prefix, $infile, $oufile);
+my %config=(lcut => 25, format => "text");
+$prefix="SR";
+while ($ARGV[$i]) {
+    if ($ARGV[$i] eq '--prefix' || $ARGV[$i] eq '-p') { $prefix=$ARGV[++$i]; }
+    elsif ($ARGV[$i] eq '-o') { $oufile=$ARGV[++$i]; }
+    elsif ($ARGV[$i] eq '-f') { $config{format} = $ARGV[++$i]; }
+    else {
+        $infile=$ARGV[$i];
+    }
+    ++$i;
+}
+
+if ($config{format} eq 'fasta') {
+    cleanFastaIllumina($infile);
+}
+elsif ($config{format} eq 'text') {
+    cleanTextIllumina($infile, $oufile);
+}
+else {
+    print STDERR "not implemented yet for this format\n";
+}
+
+=head2 cleanTextIllumina
+
+=cut
+sub cleanTextIllumina {
+    my $txtfile=shift;
+    my $outfile=shift;
+    if (!$outfile) {
+        $outfile=$txtfile . ".clean.fas";
+    }
+    open IN, "<$txtfile" or die $!;
+    open OU, ">$outfile" or die $!;
+    my $id=1;
+
+    while (<IN>) {
+        chomp;
+        my $seqstr=clean($_);
+        if (length($seqstr)>$config{lcut}) {
+            print OU ">$prefix",  $id++, "\n",  $seqstr, "\n";
+        }
+    }
+}
+
+=head2 cleanFastaIllumina
+
+   short read already in fasta format.
+
+=cut
+sub cleanFastaIllumina {
+    my $srfile=shift;
+    my $seqid=1;
+    my $newid;
+    my $reader=SeqIterator->new($srfile, 0);
+    open OU, ">$infile.clean" or die $!;
+
+    while (my $seq=$reader->next) {
+        my $id = $reader->getId;
+        if ($id =~ /[^A-Za-z0-9]/) {
+            $newid=$prefix . $seqid;
+            #print OU ">$newid\n";
+            ++$seqid;
+        }
+        else {
+            $newid=$id;
+            print OU ">$id\n";
+        }
+        #print OU $seq, "\n";
+        my $newseq=clean($seq);
+        if (length($newseq) > $config{lcut}) {
+            print OU ">$newid\n$newseq\n";
+        }
+    }
+}
+
+sub clean {
+    my $str=shift;
+    if ($str =~ /N/) {
+        #print OU "$str  Before editing\n";
+        #$str =~ s/N{8,}.{0,4}$//;
+        #$str =~ s/^.{0,4}N{8,}//;
+        $str =~ s/N{2,}.+$//;
+        $str =~ s/N.N$//;
+        $str =~ s/N$//;
+        $str =~ s/^.{1,5}N//;
+        while ($str =~ /(.+)N(.+)/) {
+            if (length($1) > length($2)) {
+                $str=$1;
+            }
+            else { $str=$2; }
+        }
+    }
+    return $str;
+}
+
+__END__
+
+
+=head1 SYNOPSIS
+
+ cleanshortread --prefix SR shortreadfile.fas
+
+I should make this work on two types of files:
+1. fasta
+2. pure text files one sequence per line
+

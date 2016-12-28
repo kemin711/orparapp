@@ -1,0 +1,4 @@
+The database for mira.
+1. Started with mysql 5.6, 
+2. Migrated to Oracle on zhouk/zhouk@Spandx
+3. Migrated to Oracle prodcution miramill/miramill@Bioinfo on hpwbff116
