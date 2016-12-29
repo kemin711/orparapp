@@ -134,11 +134,17 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgincludedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
-liborparaconsensus_la_LIBADD =
+am__DEPENDENCIES_1 =
+liborparaconsensus_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am__objects_1 =
-am__objects_2 = dnaqualstore.lo constaxmap.lo blastnrow.lo \
-	consensus.lo boxpile.lo stalactitegraph.lo piechart.lo \
-	textpile.lo
+am__objects_2 = liborparaconsensus_la-dnaqualstore.lo \
+	liborparaconsensus_la-constaxmap.lo \
+	liborparaconsensus_la-blastnrow.lo \
+	liborparaconsensus_la-consensus.lo \
+	liborparaconsensus_la-boxpile.lo \
+	liborparaconsensus_la-stalactitegraph.lo \
+	liborparaconsensus_la-piechart.lo \
+	liborparaconsensus_la-textpile.lo
 am_liborparaconsensus_la_OBJECTS = $(am__objects_1) $(am__objects_2)
 liborparaconsensus_la_OBJECTS = $(am_liborparaconsensus_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -147,8 +153,8 @@ am__v_lt_0 = --silent
 am__v_lt_1 = 
 liborparaconsensus_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
-	$(AM_CXXFLAGS) $(CXXFLAGS) $(liborparaconsensus_la_LDFLAGS) \
-	$(LDFLAGS) -o $@
+	$(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) \
+	$(liborparaconsensus_la_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -383,7 +389,9 @@ sources = dnaqualstore.cpp constaxmap.cpp blastnrow.cpp consensus.cpp boxpile.cp
 pkginclude_HEADERS = $(headers)
 lib_LTLIBRARIES = liborparaconsensus.la
 liborparaconsensus_la_SOURCES = $(headers) $(sources)
-liborparaconsensus_la_LDFLAGS = -version-info 0:0:0
+liborparaconsensus_la_CXXFLAGS = $(plotter_CXXFLAGS)
+liborparaconsensus_la_LDFLAGS = $(plotter_LDFLAGS) -version-info 0:0:0
+liborparaconsensus_la_LIBADD = $(plotter_LIBS)
 all: all-am
 
 .SUFFIXES:
@@ -462,14 +470,14 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/blastnrow.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/boxpile.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/consensus.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/constaxmap.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dnaqualstore.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/piechart.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stalactitegraph.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/textpile.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liborparaconsensus_la-blastnrow.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liborparaconsensus_la-boxpile.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liborparaconsensus_la-consensus.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liborparaconsensus_la-constaxmap.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liborparaconsensus_la-dnaqualstore.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liborparaconsensus_la-piechart.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liborparaconsensus_la-stalactitegraph.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liborparaconsensus_la-textpile.Plo@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -491,6 +499,62 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
+
+liborparaconsensus_la-dnaqualstore.lo: dnaqualstore.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -MT liborparaconsensus_la-dnaqualstore.lo -MD -MP -MF $(DEPDIR)/liborparaconsensus_la-dnaqualstore.Tpo -c -o liborparaconsensus_la-dnaqualstore.lo `test -f 'dnaqualstore.cpp' || echo '$(srcdir)/'`dnaqualstore.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liborparaconsensus_la-dnaqualstore.Tpo $(DEPDIR)/liborparaconsensus_la-dnaqualstore.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='dnaqualstore.cpp' object='liborparaconsensus_la-dnaqualstore.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -c -o liborparaconsensus_la-dnaqualstore.lo `test -f 'dnaqualstore.cpp' || echo '$(srcdir)/'`dnaqualstore.cpp
+
+liborparaconsensus_la-constaxmap.lo: constaxmap.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -MT liborparaconsensus_la-constaxmap.lo -MD -MP -MF $(DEPDIR)/liborparaconsensus_la-constaxmap.Tpo -c -o liborparaconsensus_la-constaxmap.lo `test -f 'constaxmap.cpp' || echo '$(srcdir)/'`constaxmap.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liborparaconsensus_la-constaxmap.Tpo $(DEPDIR)/liborparaconsensus_la-constaxmap.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='constaxmap.cpp' object='liborparaconsensus_la-constaxmap.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -c -o liborparaconsensus_la-constaxmap.lo `test -f 'constaxmap.cpp' || echo '$(srcdir)/'`constaxmap.cpp
+
+liborparaconsensus_la-blastnrow.lo: blastnrow.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -MT liborparaconsensus_la-blastnrow.lo -MD -MP -MF $(DEPDIR)/liborparaconsensus_la-blastnrow.Tpo -c -o liborparaconsensus_la-blastnrow.lo `test -f 'blastnrow.cpp' || echo '$(srcdir)/'`blastnrow.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liborparaconsensus_la-blastnrow.Tpo $(DEPDIR)/liborparaconsensus_la-blastnrow.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='blastnrow.cpp' object='liborparaconsensus_la-blastnrow.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -c -o liborparaconsensus_la-blastnrow.lo `test -f 'blastnrow.cpp' || echo '$(srcdir)/'`blastnrow.cpp
+
+liborparaconsensus_la-consensus.lo: consensus.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -MT liborparaconsensus_la-consensus.lo -MD -MP -MF $(DEPDIR)/liborparaconsensus_la-consensus.Tpo -c -o liborparaconsensus_la-consensus.lo `test -f 'consensus.cpp' || echo '$(srcdir)/'`consensus.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liborparaconsensus_la-consensus.Tpo $(DEPDIR)/liborparaconsensus_la-consensus.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='consensus.cpp' object='liborparaconsensus_la-consensus.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -c -o liborparaconsensus_la-consensus.lo `test -f 'consensus.cpp' || echo '$(srcdir)/'`consensus.cpp
+
+liborparaconsensus_la-boxpile.lo: boxpile.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -MT liborparaconsensus_la-boxpile.lo -MD -MP -MF $(DEPDIR)/liborparaconsensus_la-boxpile.Tpo -c -o liborparaconsensus_la-boxpile.lo `test -f 'boxpile.cpp' || echo '$(srcdir)/'`boxpile.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liborparaconsensus_la-boxpile.Tpo $(DEPDIR)/liborparaconsensus_la-boxpile.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='boxpile.cpp' object='liborparaconsensus_la-boxpile.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -c -o liborparaconsensus_la-boxpile.lo `test -f 'boxpile.cpp' || echo '$(srcdir)/'`boxpile.cpp
+
+liborparaconsensus_la-stalactitegraph.lo: stalactitegraph.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -MT liborparaconsensus_la-stalactitegraph.lo -MD -MP -MF $(DEPDIR)/liborparaconsensus_la-stalactitegraph.Tpo -c -o liborparaconsensus_la-stalactitegraph.lo `test -f 'stalactitegraph.cpp' || echo '$(srcdir)/'`stalactitegraph.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liborparaconsensus_la-stalactitegraph.Tpo $(DEPDIR)/liborparaconsensus_la-stalactitegraph.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='stalactitegraph.cpp' object='liborparaconsensus_la-stalactitegraph.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -c -o liborparaconsensus_la-stalactitegraph.lo `test -f 'stalactitegraph.cpp' || echo '$(srcdir)/'`stalactitegraph.cpp
+
+liborparaconsensus_la-piechart.lo: piechart.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -MT liborparaconsensus_la-piechart.lo -MD -MP -MF $(DEPDIR)/liborparaconsensus_la-piechart.Tpo -c -o liborparaconsensus_la-piechart.lo `test -f 'piechart.cpp' || echo '$(srcdir)/'`piechart.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liborparaconsensus_la-piechart.Tpo $(DEPDIR)/liborparaconsensus_la-piechart.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='piechart.cpp' object='liborparaconsensus_la-piechart.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -c -o liborparaconsensus_la-piechart.lo `test -f 'piechart.cpp' || echo '$(srcdir)/'`piechart.cpp
+
+liborparaconsensus_la-textpile.lo: textpile.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -MT liborparaconsensus_la-textpile.lo -MD -MP -MF $(DEPDIR)/liborparaconsensus_la-textpile.Tpo -c -o liborparaconsensus_la-textpile.lo `test -f 'textpile.cpp' || echo '$(srcdir)/'`textpile.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liborparaconsensus_la-textpile.Tpo $(DEPDIR)/liborparaconsensus_la-textpile.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='textpile.cpp' object='liborparaconsensus_la-textpile.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -c -o liborparaconsensus_la-textpile.lo `test -f 'textpile.cpp' || echo '$(srcdir)/'`textpile.cpp
 
 mostlyclean-libtool:
 	-rm -f *.lo

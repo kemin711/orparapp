@@ -3,6 +3,7 @@ Makefile
 *.o
 *.la
 .libs
+*.Plo
 doc/
 fastqreduceid
 fastqpick
