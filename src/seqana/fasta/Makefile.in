@@ -115,7 +115,8 @@ am__v_lt_1 =
 am_fastabund_OBJECTS = fastabund-fastabund.$(OBJEXT)
 fastabund_OBJECTS = $(am_fastabund_OBJECTS)
 am__DEPENDENCIES_1 =
-fastabund_DEPENDENCIES = $(top_srcdir)/src/consensus/liborparapp.la \
+fastabund_DEPENDENCIES =  \
+	$(top_srcdir)/src/consensus/liborparaconsensus.la \
 	$(am__DEPENDENCIES_1)
 fastabund_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(fastabund_CXXFLAGS) \
@@ -303,9 +304,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-gtest_CC = @gtest_CC@
 gtest_CFLAGS = @gtest_CFLAGS@
-gtest_CXX = @gtest_CXX@
 gtest_CXXFLAGS = @gtest_CXXFLAGS@
 gtest_LIBS = @gtest_LIBS@
 host = @host@
@@ -341,13 +340,11 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 uniqueseq_SOURCES = uniqueseq.cpp
-#uniqueseq_LDADD = -lkemin
 fastabund_SOURCES = fastabund.cpp 
 fastabund_CXXFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/src/consensus $(plotter_CXXFLAGS)
 fastabund_LDFLAGS = -L$(top_srcdir)/src $(plotter_LDFLALGS)
-fastabund_LDADD = $(top_srcdir)/src/consensus/liborparapp.la $(plotter_LIBS) -lpthread
+fastabund_LDADD = $(top_srcdir)/src/consensus/liborparaconsensus.la $(plotter_LIBS) -lpthread
 fastaleninfo_SOURCES = fastaleninfo.cpp
-#fastaleninfo_LDADD = -lkemin 
 combineseq_SOURCES = combineseq.cpp
 all: all-am
 
@@ -707,7 +704,6 @@ uninstall-am: uninstall-binPROGRAMS
 
 .PRECIOUS: Makefile
 
-#combineseq_LDADD = -lkemin 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

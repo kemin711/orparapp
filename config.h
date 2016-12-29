@@ -77,7 +77,7 @@
 #define PACKAGE_NAME "orparapp"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "orparapp 0.1"
+#define PACKAGE_STRING "orparapp 0.1.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "orparapp"
@@ -86,7 +86,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.1"
+#define PACKAGE_VERSION "0.1.0"
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
@@ -96,7 +96,7 @@
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "0.1"
+#define VERSION "0.1.0"
 
 /* Define to the type of a signed integer type of width exactly 8 bits if such
    a type exists and the standard includes do not define it. */

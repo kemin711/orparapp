@@ -134,20 +134,20 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgincludedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
-liborparapp_la_LIBADD =
+liborparaconsensus_la_LIBADD =
 am__objects_1 =
 am__objects_2 = dnaqualstore.lo constaxmap.lo blastnrow.lo \
 	consensus.lo boxpile.lo stalactitegraph.lo piechart.lo \
 	textpile.lo
-am_liborparapp_la_OBJECTS = $(am__objects_1) $(am__objects_2)
-liborparapp_la_OBJECTS = $(am_liborparapp_la_OBJECTS)
+am_liborparaconsensus_la_OBJECTS = $(am__objects_1) $(am__objects_2)
+liborparaconsensus_la_OBJECTS = $(am_liborparaconsensus_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-liborparapp_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
+liborparaconsensus_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
-	$(AM_CXXFLAGS) $(CXXFLAGS) $(liborparapp_la_LDFLAGS) \
+	$(AM_CXXFLAGS) $(CXXFLAGS) $(liborparaconsensus_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -201,8 +201,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(liborparapp_la_SOURCES)
-DIST_SOURCES = $(liborparapp_la_SOURCES)
+SOURCES = $(liborparaconsensus_la_SOURCES)
+DIST_SOURCES = $(liborparaconsensus_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -343,9 +343,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-gtest_CC = @gtest_CC@
 gtest_CFLAGS = @gtest_CFLAGS@
-gtest_CXX = @gtest_CXX@
 gtest_CXXFLAGS = @gtest_CXXFLAGS@
 gtest_LIBS = @gtest_LIBS@
 host = @host@
@@ -380,12 +378,12 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-headers = dnaqualstore.h constaxmap.h blastnrow.h consensus.h boxpile.h stalactitegraph.h piechart.h textpile.h 
+headers = dnaqualstore.h consensus.h boxpile.h piechart.h textpile.h stalactitegraph.h constaxmap.h blastnrow.h 
 sources = dnaqualstore.cpp constaxmap.cpp blastnrow.cpp consensus.cpp boxpile.cpp stalactitegraph.cpp piechart.cpp textpile.cpp 
 pkginclude_HEADERS = $(headers)
-lib_LTLIBRARIES = liborparapp.la
-liborparapp_la_SOURCES = $(headers) $(sources)
-liborparapp_la_LDFLAGS = -version-info 0:0:0
+lib_LTLIBRARIES = liborparaconsensus.la
+liborparaconsensus_la_SOURCES = $(headers) $(sources)
+liborparaconsensus_la_LDFLAGS = -version-info 0:0:0
 all: all-am
 
 .SUFFIXES:
@@ -455,8 +453,8 @@ clean-libLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-liborparapp.la: $(liborparapp_la_OBJECTS) $(liborparapp_la_DEPENDENCIES) $(EXTRA_liborparapp_la_DEPENDENCIES) 
-	$(AM_V_CXXLD)$(liborparapp_la_LINK) -rpath $(libdir) $(liborparapp_la_OBJECTS) $(liborparapp_la_LIBADD) $(LIBS)
+liborparaconsensus.la: $(liborparaconsensus_la_OBJECTS) $(liborparaconsensus_la_DEPENDENCIES) $(EXTRA_liborparaconsensus_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(liborparaconsensus_la_LINK) -rpath $(libdir) $(liborparaconsensus_la_OBJECTS) $(liborparaconsensus_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

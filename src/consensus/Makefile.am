@@ -5,5 +5,5 @@ sources = dnaqualstore.cpp constaxmap.cpp blastnrow.cpp consensus.cpp boxpile.cp
 
 pkginclude_HEADERS = $(headers)
 lib_LTLIBRARIES = liborparaconsensus.la
-liborparaconsensus = $(headers) $(sources)
-liborparaconsensus = -version-info 0:0:0
+liborparaconsensus_la_SOURCES = $(headers) $(sources)
+liborparaconsensus_la_LDFLAGS = -version-info 0:0:0

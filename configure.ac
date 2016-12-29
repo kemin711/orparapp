@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([orparapp], [0.1], [kmzhou4@yahoo.com])
+AC_INIT([orparapp], [0.1.0], [kmzhou4@yahoo.com])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 AC_CONFIG_SRCDIR([src/match.h])
 AC_CONFIG_HEADERS([config.h])
@@ -22,11 +22,15 @@ AC_LANG_PUSH([C++])
 AX_CXX_COMPILE_STDCXX_11([noext], [mandatory])
 AC_LANG_POP([C++])
 
+if test "$prefix" = "NONE"; then
+	prefix=$ac_default_prefix
+fi
 # set up gtest
 save_LDFLAGS=$LDFLAGS
 save_LIBS=$LIBS
 LDFLAGS="-L/usr/lib/x86_64-linux-gnu $LDFLAGS"
 LIBS="-lpthread $LIBS"
+#this macro is not setting up PTREAD_XXX
 AX_PTHREAD([
   AC_DEFINE([HAVE_PTHREAD], [1], [Define if you have POSIX threads libraries and headers])
   gtest_LIBS="$PTHREAD_LIBS $LIBS"
@@ -34,10 +38,6 @@ AX_PTHREAD([
   gtest_CXXFLAGS="$CXXFLAGS $PTHREAD_CXXFLAGS"
   gtest_CC="$PTHREAD_CC"
   gtest_CXX="$PTHREAD_CXX"])
-AC_SUBST([gtest_CFLAGS])
-AC_SUBST([gtest_CXXFLAGS])
-AC_SUBST([gtest_CC])
-AC_SUBST([gtest_CXX])
 LDFLAGS=$save_LDFLAGS
 LIBS=$save_LIBS
 
@@ -51,8 +51,8 @@ AC_LANG_PUSH([C++])
 save_LIBS=$LIBS
 save_LDFLAGS=$LDFLAGS
 save_CXXFLAGS=$CXXFLAGS
-LDFLAGS="-L/usr/local/lib $LDFLAGS"
-CXXFLAGS="-I/usr/local/include $CXXFLAGS"
+LDFLAGS="-L$prefix/lib $LDFLAGS"
+CXXFLAGS="-I$prefix/include $CXXFLAGS"
 LIBS="$LIBS -lgtest -lgtest_main -lgmock -lgmock_main -lpthread"
 if test -n "$GTESTINC"; then
 	LDFLAGS="-L$GTESTLIB $LDFLAGS"
@@ -60,12 +60,14 @@ if test -n "$GTESTINC"; then
 fi
 AC_LINK_IFELSE(
 	[AC_LANG_PROGRAM([#include <gmock/gmock.h>], [testing::Cardinality dummy])],
-	[gtest_LIBS="$gtest_LIBS $LIBS"] [HAVE_GTEST=1] [HAVE_GMOCK=1],
+	[gtest_LIBS=$LIBS] [gtest_CXXFLAGS=$CXXFLAGS] [gtest_LDFLAGS=$LDFLAGS] [HAVE_GTEST=1] [HAVE_GMOCK=1],
 	[AC_MSG_WARN([libgtest and libgmock not found, will not be able to make check.])])
+AC_SUBST([gtest_CFLAGS])
+AC_SUBST([gtest_CXXFLAGS])
+AC_SUBST([gtest_LIBS])
 LIBS=$save_LIBS
 LDFLAGS=$save_LDFLAGS
 CXXFLAGS=$save_CXXFLAGS
-AC_SUBST([gtest_LIBS])
 #AC_LANG_POP([C++])
 ### end of gtest
 
@@ -74,22 +76,20 @@ AC_SUBST([gtest_LIBS])
 save_LIBS=$LIBS
 save_CXXFLAGS=$CXXFLAGS
 save_LDFLAGS=$LDFLAGS
-CXXFLAGS="$CXXFLAGS -std=c++11 -I/usr/local/include/bamtools"
-LDFLAGS="$LDFLAGS -L/usr/local/lib/bamtools"
-LIBS="$LIBS -lbamtools"
 bam_LIBS="-lbamtools"
-bam_CXXFLAGS="-I/usr/local/include/bamtools"
-bam_LDFLAGS="-L/usr/local/lib/bamtools"
+bam_CXXFLAGS="-I$prefix/include/bamtools"
+bam_LDFLAGS="-L$prefix/lib/bamtools"
 AC_ARG_VAR([BAMTOOLSINC], [path for bamtools include dir, canb environment variable or confg variable])
 AC_ARG_VAR([BAMTOOLSLIB], [path for bamtools lib dir])
 if test -n "$BAMTOOLSINC"; then 
-	CXXFLAGS="-I$BAMTOOLSINC $CXXFLAGS"
 	bam_CXXFLAGS=$BAMTOOLSINC
 fi
 if test -n "$BAMTOOLSLIB"; then 
-	LDFLAGS="-L$BAMTOOLSLIB $LDFLAGS"
 	bam_LDFLAGS=$BAMTOOLSLIB
 fi
+CXXFLAGS="$bam_CXXFLAGS $CXXFLAGS"
+LDFLAGS="$bam_LDFLAGS $LDFLAGS"
+LIBS="$LIBS $bam_LIBS"
 AC_CHECK_HEADERS([api/BamReader.h], [bamtools_found=yes], [AC_MSG_ERROR([Unable to find bambools header])])
 AC_LINK_IFELSE(
 		[AC_LANG_PROGRAM([#include <api/BamReader.h>],  [BamTools::BamReader dummy])],
@@ -103,35 +103,36 @@ CXXFLAGS=$save_CXXFLAGS
 LDFLAGS=$save_LDFLAGS
 
 # boost lib check
+# each program need to add its own library. there too many
+# libraries. Many of boost libs are header only
 save_LIBS=$LIBS
 save_CXXFLAGS=$CXXFLAGS
 save_LDFLAGS=$LDFLAGS
 boost_LIBS="-lboost_program_options"
-boost_CXXFLAGS="-I/usr/local/include/boost"
-boost_LDFLAGS="-L/usr/local/lib"
-CXXFLAGS="-I/usr/local/include/boost $CXXFLAGS"
-LIBS="$LIBS -lboost_program_options"
+boost_CXXFLAGS="-I$prefix/include/boost"
+boost_LDFLAGS="-L$prefix/lib"
 AC_ARG_VAR([BOOSTINC], [PATH for boost include dir, canb environment variable or confg variable])
 AC_ARG_VAR([BOOSTLIB], [PATH for boost lib dir])
 if (test -n "$BOOSTINC"); then 
-	CXXFLAGS="-I$BOOSTINC $CXXFLAGS"
 	boost_CXXFLAGS="-I$BOOSTINC"
 fi
 if (test -n "$BOOSTLIB"); then 
-	LDFLAGS="-L$BOOSTLIB $LDFLAGS"
 	boost_LDFLAGS="-L$BOOSTLIB"
 fi
+CXXFLAGS="$boost_CXXFLAGS $CXXFLAGS"
+LDFLAGS="$boost_LDFLAGS $LDFLAGS"
+LIBS="$LIBS $boost_LIBS"
 AC_LINK_IFELSE(
 		[AC_LANG_PROGRAM([#include <program_options/parsers.hpp>],  [boost::program_options::option dummy])],
 		[HAVE_BOOST=1],
-		[AC_MSG_WARN([boost is not installed])])
+		[AC_MSG_ERROR([boost is not installed])])
 AC_SUBST([boost_LIBS])
 AC_SUBST([boost_CXXFLAGS])
 AC_SUBST([boost_LDFLAGS])
 LIBS=$save_LIBS
 CXXFLAGS=$save_CXXFLAGS
 LDFLAGS=$save_LDFLAGS
-if test "$HAVE_BOOST" = "1"; then
+if test "$HAVE_BOOST"; then
 	AC_MSG_NOTICE([found boost])
 fi
 
@@ -140,7 +141,7 @@ fi
 #save_CXXFLAGS=$CXXFLAGS
 #save_LDFLAGS=$LDFLAGS
 LIBS="$LIBS -lkemin"
-CXXFLAGS="-I/usr/local/include/orpara $CXXFLAGS"
+CXXFLAGS="-I$prefix/include/orpara $CXXFLAGS"
 AC_ARG_VAR([ORPARAIND], [PATH for orpara include dir, can be environment variable or confg variable])
 AC_ARG_VAR([ORPARALIB], [PATH for orpara lib dir])
 if (test -n "$ORPARAINC"); then 
@@ -162,20 +163,21 @@ AC_LINK_IFELSE(
 save_LIBS=$LIBS
 save_CXXFLAGS=$CXXFLAGS
 save_LDFLAGS=$LDFLAGS
+# the x** libs are system level libs that the build host should have
 plotter_LIBS="-lplotter -lXaw -lXmu -lXt -lSM -lICE -lXext -lX11 -lpng -lz -lm"
-plotter_CXXFLAGS="-I/usr/local/include"
-plotter_LDFLAGS="-L/usr/local/lib"
-LIBS="$LIBS -lplotter -lXaw -lXmu -lXt -lSM -lICE -lXext -lX11 -lpng -lz -lm"
+plotter_CXXFLAGS="-I$prefix/include"
+plotter_LDFLAGS="-L$prefix/lib"
+LIBS="$LIBS $plotter_LIBS"
 AC_ARG_VAR([PLOTUTILINC], [PATH for plotutil include dir, can be environment variable or confg variable])
 AC_ARG_VAR([PLOTUTILLIB], [PATH for plotutil lib dir])
 if (test -n "$PLOTUTILINC"); then 
-	CXXFLAGS="-I$PLOTUTILINC $CXXFLAGS"
 	plotter_CXXFLAGS="-I$PLOTUTILINC"
 fi
 if (test -n "$PLOTUTILLIB"); then 
-	LDFLAGS="-L$PLOTUTILLIB $LDFLAGS"
 	plotter_LDFLAGS="-L$PLOTUTILLIB"
 fi
+CXXFLAGS="$plotter_CXXFLAGS $CXXFLAGS"
+LDFLAGS="$plotter_LDFLAGS $LDFLAGS"
 AC_LINK_IFELSE(
 		[AC_LANG_PROGRAM([#include <plotter.h>],  [SVGPlotter dummy])],
 		[HAVE_PLOTUTIL=1],
