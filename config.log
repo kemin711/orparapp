@@ -907,15 +907,15 @@ configure:18424: $? = 0
 configure:18469: g++ -std=c++11 -o conftest -I/usr/local/include/boost -g -O2  -L/usr/local/lib  conftest.cpp  -lboost_program_options >&5
 configure:18469: $? = 0
 configure:18483: found boost
-configure:18503: checking bioseq.h usability
-configure:18503: g++ -std=c++11 -c -I/usr/local/include/orpara -g -O2  conftest.cpp >&5
-configure:18503: $? = 0
-configure:18503: result: yes
-configure:18503: checking bioseq.h presence
-configure:18503: g++ -E -std=c++11  conftest.cpp
+configure:18504: checking bioseq.h usability
+configure:18504: g++ -std=c++11 -c -I/usr/local/include/orpara -g -O2  conftest.cpp >&5
+configure:18504: $? = 0
+configure:18504: result: yes
+configure:18504: checking bioseq.h presence
+configure:18504: g++ -E -std=c++11  conftest.cpp
 conftest.cpp:27:20: fatal error: bioseq.h: No such file or directory
 compilation terminated.
-configure:18503: $? = 1
+configure:18504: $? = 1
 configure: failed program was:
 | /* confdefs.h */
 | #define PACKAGE_NAME "orparapp"
@@ -944,30 +944,30 @@ configure: failed program was:
 | #define HAVE_API_BAMREADER_H 1
 | /* end confdefs.h.  */
 | #include <bioseq.h>
-configure:18503: result: no
-configure:18503: WARNING: bioseq.h: accepted by the compiler, rejected by the preprocessor!
-configure:18503: WARNING: bioseq.h: proceeding with the compiler's result
-configure:18503: checking for bioseq.h
-configure:18503: result: yes
-configure:18526: g++ -std=c++11 -o conftest -I/usr/local/include/orpara -g -O2   conftest.cpp  -lkemin >&5
-configure:18526: $? = 0
-configure:18567: g++ -std=c++11 -o conftest -I/usr/local/include -I/usr/local/include/orpara -g -O2  -L/usr/local/lib  conftest.cpp  -lkemin -lplotter -lXaw -lXmu -lXt -lSM -lICE -lXext -lX11 -lpng -lz -lm >&5
-configure:18567: $? = 0
-configure:18590: checking for string.h
-configure:18590: result: yes
-configure:18602: checking for stdbool.h that conforms to C99
-configure:18669: gcc -c -g -O2  conftest.c >&5
-configure:18669: $? = 0
-configure:18676: result: yes
-configure:18678: checking for _Bool
-configure:18678: gcc -c -g -O2  conftest.c >&5
-configure:18678: $? = 0
-configure:18678: gcc -c -g -O2  conftest.c >&5
+configure:18504: result: no
+configure:18504: WARNING: bioseq.h: accepted by the compiler, rejected by the preprocessor!
+configure:18504: WARNING: bioseq.h: proceeding with the compiler's result
+configure:18504: checking for bioseq.h
+configure:18504: result: yes
+configure:18527: g++ -std=c++11 -o conftest -I/usr/local/include/orpara -g -O2  -L/usr/local/lib  conftest.cpp  -lkemin >&5
+configure:18527: $? = 0
+configure:18568: g++ -std=c++11 -o conftest -I/usr/local/include -I/usr/local/include/orpara -g -O2  -L/usr/local/lib -L/usr/local/lib  conftest.cpp  -lkemin -lplotter -lXaw -lXmu -lXt -lSM -lICE -lXext -lX11 -lpng -lz -lm >&5
+configure:18568: $? = 0
+configure:18591: checking for string.h
+configure:18591: result: yes
+configure:18603: checking for stdbool.h that conforms to C99
+configure:18670: gcc -c -g -O2  conftest.c >&5
+configure:18670: $? = 0
+configure:18677: result: yes
+configure:18679: checking for _Bool
+configure:18679: gcc -c -g -O2  conftest.c >&5
+configure:18679: $? = 0
+configure:18679: gcc -c -g -O2  conftest.c >&5
 conftest.c: In function 'main':
 conftest.c:65:20: error: expected expression before ')' token
  if (sizeof ((_Bool)))
                     ^
-configure:18678: $? = 1
+configure:18679: $? = 1
 configure: failed program was:
 | /* confdefs.h */
 | #define PACKAGE_NAME "orparapp"
@@ -1038,16 +1038,16 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:18678: result: yes
-configure:18689: checking for int8_t
-configure:18689: gcc -c -g -O2  conftest.c >&5
-configure:18689: $? = 0
-configure:18689: gcc -c -g -O2  conftest.c >&5
+configure:18679: result: yes
+configure:18690: checking for int8_t
+configure:18690: gcc -c -g -O2  conftest.c >&5
+configure:18690: $? = 0
+configure:18690: gcc -c -g -O2  conftest.c >&5
 conftest.c: In function 'main':
 conftest.c:67:12: error: size of array 'test_array' is negative
  static int test_array [1 - 2 * !((int8_t) (((((int8_t) 1 << N) << N) - 1) * 2 + 1)
             ^
-configure:18689: $? = 1
+configure:18690: $? = 1
 configure: failed program was:
 | /* confdefs.h */
 | #define PACKAGE_NAME "orparapp"
@@ -1123,16 +1123,16 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:18689: result: yes
-configure:18700: checking for size_t
-configure:18700: gcc -c -g -O2  conftest.c >&5
-configure:18700: $? = 0
-configure:18700: gcc -c -g -O2  conftest.c >&5
+configure:18690: result: yes
+configure:18701: checking for size_t
+configure:18701: gcc -c -g -O2  conftest.c >&5
+configure:18701: $? = 0
+configure:18701: gcc -c -g -O2  conftest.c >&5
 conftest.c: In function 'main':
 conftest.c:66:21: error: expected expression before ')' token
  if (sizeof ((size_t)))
                      ^
-configure:18700: $? = 1
+configure:18701: $? = 1
 configure: failed program was:
 | /* confdefs.h */
 | #define PACKAGE_NAME "orparapp"
@@ -1204,16 +1204,16 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:18700: result: yes
-configure:18716: checking for floor
-configure:18716: gcc -o conftest -g -O2   conftest.c  -lkemin >&5
+configure:18701: result: yes
+configure:18717: checking for floor
+configure:18717: gcc -o conftest -g -O2  -L/usr/local/lib  conftest.c  -lkemin >&5
 conftest.c:53:6: warning: conflicting types for built-in function 'floor'
  char floor ();
       ^
-/tmp/ccl5u6TS.o: In function `main':
+/tmp/ccmWScdr.o: In function `main':
 /home/kzhou/coding/orparapp/conftest.c:64: undefined reference to `floor'
 collect2: error: ld returned 1 exit status
-configure:18716: $? = 1
+configure:18717: $? = 1
 configure: failed program was:
 | /* confdefs.h */
 | #define PACKAGE_NAME "orparapp"
@@ -1282,20 +1282,20 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:18716: result: no
-configure:18716: checking for mkdir
-configure:18716: gcc -o conftest -g -O2   conftest.c  -lkemin >&5
-configure:18716: $? = 0
-configure:18716: result: yes
-configure:18716: checking for pow
-configure:18716: gcc -o conftest -g -O2   conftest.c  -lkemin >&5
+configure:18717: result: no
+configure:18717: checking for mkdir
+configure:18717: gcc -o conftest -g -O2  -L/usr/local/lib  conftest.c  -lkemin >&5
+configure:18717: $? = 0
+configure:18717: result: yes
+configure:18717: checking for pow
+configure:18717: gcc -o conftest -g -O2  -L/usr/local/lib  conftest.c  -lkemin >&5
 conftest.c:54:6: warning: conflicting types for built-in function 'pow'
  char pow ();
       ^
-/tmp/ccNXFiT1.o: In function `main':
+/tmp/ccCljXbv.o: In function `main':
 /home/kzhou/coding/orparapp/conftest.c:65: undefined reference to `pow'
 collect2: error: ld returned 1 exit status
-configure:18716: $? = 1
+configure:18717: $? = 1
 configure: failed program was:
 | /* confdefs.h */
 | #define PACKAGE_NAME "orparapp"
@@ -1365,24 +1365,24 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:18716: result: no
-configure:18716: checking for strchr
-configure:18716: gcc -o conftest -g -O2   conftest.c  -lkemin >&5
+configure:18717: result: no
+configure:18717: checking for strchr
+configure:18717: gcc -o conftest -g -O2  -L/usr/local/lib  conftest.c  -lkemin >&5
 conftest.c:54:6: warning: conflicting types for built-in function 'strchr'
  char strchr ();
       ^
-configure:18716: $? = 0
-configure:18716: result: yes
-configure:18716: checking for strstr
-configure:18716: gcc -o conftest -g -O2   conftest.c  -lkemin >&5
+configure:18717: $? = 0
+configure:18717: result: yes
+configure:18717: checking for strstr
+configure:18717: gcc -o conftest -g -O2  -L/usr/local/lib  conftest.c  -lkemin >&5
 conftest.c:55:6: warning: conflicting types for built-in function 'strstr'
  char strstr ();
       ^
-configure:18716: $? = 0
-configure:18716: result: yes
-configure:18837: checking that generated files are newer than configure
-configure:18843: result: done
-configure:18874: creating ./config.status
+configure:18717: $? = 0
+configure:18717: result: yes
+configure:18838: checking that generated files are newer than configure
+configure:18844: result: done
+configure:18875: creating ./config.status
 
 ## ---------------------- ##
 ## Running config.status. ##
@@ -1611,7 +1611,7 @@ INSTALL_PROGRAM='${INSTALL}'
 INSTALL_SCRIPT='${INSTALL}'
 INSTALL_STRIP_PROGRAM='$(install_sh) -c -s'
 LD='/usr/bin/ld -m elf_x86_64'
-LDFLAGS=''
+LDFLAGS='-L/usr/local/lib '
 LIBOBJS=''
 LIBS=' -lkemin'
 LIBTOOL='$(SHELL) $(top_builddir)/libtool'

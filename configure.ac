@@ -142,6 +142,7 @@ fi
 #save_LDFLAGS=$LDFLAGS
 LIBS="$LIBS -lkemin"
 CXXFLAGS="-I$prefix/include/orpara $CXXFLAGS"
+LDFLAGS="-L$prefix/lib $LDFLAGS"
 AC_ARG_VAR([ORPARAIND], [PATH for orpara include dir, can be environment variable or confg variable])
 AC_ARG_VAR([ORPARALIB], [PATH for orpara lib dir])
 if (test -n "$ORPARAINC"); then 
