@@ -1210,7 +1210,7 @@ configure:18717: gcc -o conftest -g -O2  -L/usr/local/lib  conftest.c  -lkemin >
 conftest.c:53:6: warning: conflicting types for built-in function 'floor'
  char floor ();
       ^
-/tmp/ccIOR31K.o: In function `main':
+/tmp/ccepMQjR.o: In function `main':
 /home/kzhou/coding/orparapp/conftest.c:64: undefined reference to `floor'
 collect2: error: ld returned 1 exit status
 configure:18717: $? = 1
@@ -1292,7 +1292,7 @@ configure:18717: gcc -o conftest -g -O2  -L/usr/local/lib  conftest.c  -lkemin >
 conftest.c:54:6: warning: conflicting types for built-in function 'pow'
  char pow ();
       ^
-/tmp/cc4RMJkP.o: In function `main':
+/tmp/cc5UrbTV.o: In function `main':
 /home/kzhou/coding/orparapp/conftest.c:65: undefined reference to `pow'
 collect2: error: ld returned 1 exit status
 configure:18717: $? = 1
