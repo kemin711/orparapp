@@ -110,60 +110,67 @@ PROGRAMS = $(bin_PROGRAMS)
 am_GCcontent_OBJECTS = GCcontent.$(OBJEXT)
 GCcontent_OBJECTS = $(am_GCcontent_OBJECTS)
 GCcontent_LDADD = $(LDADD)
-GCcontent_DEPENDENCIES = ../liborparappcommon.la
+am__DEPENDENCIES_1 =
+GCcontent_DEPENDENCIES = ../liborparappcommon.la $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
 am_bam2tab_OBJECTS = bam2tab-bam2tab.$(OBJEXT)
 bam2tab_OBJECTS = $(am_bam2tab_OBJECTS)
-am__DEPENDENCIES_1 =
-bam2tab_DEPENDENCIES = $(LDADD) $(am__DEPENDENCIES_1)
+am__DEPENDENCIES_2 = ../liborparappcommon.la $(am__DEPENDENCIES_1)
+bam2tab_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
 bam2tab_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(bam2tab_CXXFLAGS) \
 	$(CXXFLAGS) $(bam2tab_LDFLAGS) $(LDFLAGS) -o $@
 am_bamfilter_OBJECTS = bamfilter-bamfilter.$(OBJEXT)
 bamfilter_OBJECTS = $(am_bamfilter_OBJECTS)
-bamfilter_DEPENDENCIES = $(LDADD) $(am__DEPENDENCIES_1)
+bamfilter_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
 bamfilter_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(bamfilter_CXXFLAGS) \
 	$(CXXFLAGS) $(bamfilter_LDFLAGS) $(LDFLAGS) -o $@
 am_comparefastq_OBJECTS = comparefastq.$(OBJEXT)
 comparefastq_OBJECTS = $(am_comparefastq_OBJECTS)
 comparefastq_LDADD = $(LDADD)
-comparefastq_DEPENDENCIES = ../liborparappcommon.la
+comparefastq_DEPENDENCIES = ../liborparappcommon.la \
+	$(am__DEPENDENCIES_1)
 am_comparetoref_OBJECTS = comparetoref.$(OBJEXT) \
 	genoanalyzer.$(OBJEXT)
 comparetoref_OBJECTS = $(am_comparetoref_OBJECTS)
 comparetoref_LDADD = $(LDADD)
-comparetoref_DEPENDENCIES = ../liborparappcommon.la
+comparetoref_DEPENDENCIES = ../liborparappcommon.la \
+	$(am__DEPENDENCIES_1)
 am_picksubseq_OBJECTS = picksubseq.$(OBJEXT)
 picksubseq_OBJECTS = $(am_picksubseq_OBJECTS)
 picksubseq_LDADD = $(LDADD)
-picksubseq_DEPENDENCIES = ../liborparappcommon.la
+picksubseq_DEPENDENCIES = ../liborparappcommon.la \
+	$(am__DEPENDENCIES_1)
 am_polymerstat_OBJECTS = polymerstat.$(OBJEXT)
 polymerstat_OBJECTS = $(am_polymerstat_OBJECTS)
 polymerstat_LDADD = $(LDADD)
-polymerstat_DEPENDENCIES = ../liborparappcommon.la
+polymerstat_DEPENDENCIES = ../liborparappcommon.la \
+	$(am__DEPENDENCIES_1)
 am_selortho_OBJECTS = selortho.$(OBJEXT)
 selortho_OBJECTS = $(am_selortho_OBJECTS)
 selortho_LDADD = $(LDADD)
-selortho_DEPENDENCIES = ../liborparappcommon.la
+selortho_DEPENDENCIES = ../liborparappcommon.la $(am__DEPENDENCIES_1)
 am_stemloop_OBJECTS = stemloop-stemloop.$(OBJEXT)
 stemloop_OBJECTS = $(am_stemloop_OBJECTS)
-stemloop_DEPENDENCIES = $(LDADD) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+stemloop_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 stemloop_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(stemloop_CXXFLAGS) \
 	$(CXXFLAGS) $(stemloop_LDFLAGS) $(LDFLAGS) -o $@
 am_tabulatepair_OBJECTS = tabulatepair.$(OBJEXT)
 tabulatepair_OBJECTS = $(am_tabulatepair_OBJECTS)
 tabulatepair_LDADD = $(LDADD)
-tabulatepair_DEPENDENCIES = ../liborparappcommon.la
+tabulatepair_DEPENDENCIES = ../liborparappcommon.la \
+	$(am__DEPENDENCIES_1)
 am_validateprtsite_OBJECTS = validateprtsite.$(OBJEXT)
 validateprtsite_OBJECTS = $(am_validateprtsite_OBJECTS)
 validateprtsite_LDADD = $(LDADD)
-validateprtsite_DEPENDENCIES = ../liborparappcommon.la
+validateprtsite_DEPENDENCIES = ../liborparappcommon.la \
+	$(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -426,6 +433,9 @@ localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
+orpara_CXXFLAGS = @orpara_CXXFLAGS@
+orpara_LDFLAGS = @orpara_LDFLAGS@
+orpara_LIBS = @orpara_LIBS@
 pdfdir = @pdfdir@
 plotter_CXXFLAGS = @plotter_CXXFLAGS@
 plotter_LDFLAGS = @plotter_LDFLAGS@
@@ -442,15 +452,15 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CXXFLAGS = -I.. 
-AM_LDFLAGS = -L..
-LDADD = ../liborparappcommon.la
+AM_CXXFLAGS = -I.. $(orpara_CXXFLAGS) 
+AM_LDFLAGS = -L.. $(orpara_LDFLAGS)
+LDADD = ../liborparappcommon.la $(orpara_LIBS)
 selortho_SOURCES = selortho.cpp 
 GCcontent_SOURCES = GCcontent.cpp
 stemloop_SOURCES = stemloop.cpp 
-stemloop_CXXFLAGS = $(bam_CXXFLAGS) $(boost_CXXFLAGS) $(AM_CXXFLAGS)
-stemloop_LDFLAGS = $(bam_LDFLAGS) $(boost_LDFLAGS) $(AM_LDFLAGS)
-stemloop_LDADD = $(LDADD) $(bam_LIBS) $(boost_LIBS)
+stemloop_CXXFLAGS = $(AM_CXXFLAGS) $(bam_CXXFLAGS) $(boost_CXXFLAGS)
+stemloop_LDFLAGS = $(AM_LDFLAGS) $(bam_LDFLAGS) $(boost_LDFLAGS) 
+stemloop_LDADD = $(LDADD) $(bam_LDFLAGS) $(bam_LIBS) $(boost_LIBS)
 comparetoref_SOURCES = comparetoref.cpp genoanalyzer.h genoanalyzer.cpp
 picksubseq_SOURCES = picksubseq.cpp
 bam2tab_SOURCES = bam2tab.cpp

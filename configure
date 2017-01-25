@@ -641,6 +641,9 @@ plotter_CXXFLAGS
 plotter_LIBS
 PLOTUTILLIB
 PLOTUTILINC
+orpara_LDFLAGS
+orpara_CXXFLAGS
+orpara_LIBS
 ORPARALIB
 ORPARAIND
 boost_LDFLAGS
@@ -18485,20 +18488,23 @@ $as_echo "$as_me: found boost" >&6;}
 fi
 
 # Checks for libraries. `-lkemin':
-#save_LIBS=$LIBS
-#save_CXXFLAGS=$CXXFLAGS
-#save_LDFLAGS=$LDFLAGS
-LIBS="$LIBS -lkemin"
-CXXFLAGS="-I$prefix/include/orpara $CXXFLAGS"
-LDFLAGS="-L$prefix/lib $LDFLAGS"
+save_LIBS=$LIBS
+save_CXXFLAGS=$CXXFLAGS
+save_LDFLAGS=$LDFLAGS
+orpara_LIBS="-lkemin"
+orpara_CXXFLAGS="-I$prefix/include/orpara"
+orpara_LDFLAGS="-L$prefix/lib"
 
 
 if (test -n "$ORPARAINC"); then
-	CXXFLAGS="-I$ORPARAINC $CXXFLAGS"
+	orpara_CXXFLAGS="-I$ORPARAINC"
 fi
 if (test -n "$ORPARALIB"); then
-	LDFLAGS="-L$ORPARALIB $LDFLAGS"
+	orpara_LDFLAGS="-L$ORPARALIBS"
 fi
+LIBS="$LIBS $orpara_LIB"
+CXXFLAGS="$orpara_CXXFLAGS $CXXFLAGS"
+LDFLAGS="$orpara_LDFLAGS $LDFLAGS"
 for ac_header in bioseq.h
 do :
   ac_fn_cxx_check_header_mongrel "$LINENO" "bioseq.h" "ac_cv_header_bioseq_h" "$ac_includes_default"
@@ -18531,9 +18537,12 @@ else
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-#LIBS=$save_LIBS
-#CXXFLAGS=$save_CXXFLAGS
-#LDFLAGS=$save_LDFLAGS
+
+
+
+LIBS=$save_LIBS
+CXXFLAGS=$save_CXXFLAGS
+LDFLAGS=$save_LDFLAGS
 
 # Checks for libraries. libplotter
 save_LIBS=$LIBS

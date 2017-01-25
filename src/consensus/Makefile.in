@@ -135,7 +135,8 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgincludedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-liborparaconsensus_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
+liborparaconsensus_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am__objects_1 =
 am__objects_2 = liborparaconsensus_la-dnaqualstore.lo \
 	liborparaconsensus_la-blastnrow.lo \
@@ -365,6 +366,9 @@ localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
+orpara_CXXFLAGS = @orpara_CXXFLAGS@
+orpara_LDFLAGS = @orpara_LDFLAGS@
+orpara_LIBS = @orpara_LIBS@
 pdfdir = @pdfdir@
 plotter_CXXFLAGS = @plotter_CXXFLAGS@
 plotter_LDFLAGS = @plotter_LDFLAGS@
@@ -389,9 +393,9 @@ sources = dnaqualstore.cpp blastnrow.cpp consensus.cpp stalactitegraph.cpp
 pkginclude_HEADERS = $(libheaders)
 lib_LTLIBRARIES = liborparaconsensus.la
 liborparaconsensus_la_SOURCES = $(libheaders) $(headers) $(sources)
-liborparaconsensus_la_CXXFLAGS = $(plotter_CXXFLAGS)
-liborparaconsensus_la_LDFLAGS = $(plotter_LDFLAGS) -version-info 0:0:0
-liborparaconsensus_la_LIBADD = $(plotter_LIBS)
+liborparaconsensus_la_CXXFLAGS = $(orpara_CXXFLAGS) $(plotter_CXXFLAGS)
+liborparaconsensus_la_LDFLAGS = $(orpara_LDFLAGS) $(plotter_LDFLAGS) -version-info 0:0:0
+liborparaconsensus_la_LIBADD = $(orpara_LIBS) $(plotter_LIBS)
 all: all-am
 
 .SUFFIXES:

@@ -108,25 +108,29 @@ PROGRAMS = $(bin_PROGRAMS)
 am_combineseq_OBJECTS = combineseq.$(OBJEXT)
 combineseq_OBJECTS = $(am_combineseq_OBJECTS)
 combineseq_LDADD = $(LDADD)
+am__DEPENDENCIES_1 =
+combineseq_DEPENDENCIES = $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
 am_fastabund_OBJECTS = fastabund-fastabund.$(OBJEXT)
 fastabund_OBJECTS = $(am_fastabund_OBJECTS)
-am__DEPENDENCIES_1 =
+am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
 fastabund_DEPENDENCIES =  \
 	$(top_srcdir)/src/consensus/liborparaconsensus.la \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
 fastabund_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(fastabund_CXXFLAGS) \
 	$(CXXFLAGS) $(fastabund_LDFLAGS) $(LDFLAGS) -o $@
 am_fastaleninfo_OBJECTS = fastaleninfo.$(OBJEXT)
 fastaleninfo_OBJECTS = $(am_fastaleninfo_OBJECTS)
 fastaleninfo_LDADD = $(LDADD)
+fastaleninfo_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_uniqueseq_OBJECTS = uniqueseq.$(OBJEXT)
 uniqueseq_OBJECTS = $(am_uniqueseq_OBJECTS)
 uniqueseq_LDADD = $(LDADD)
+uniqueseq_DEPENDENCIES = $(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -323,6 +327,9 @@ localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
+orpara_CXXFLAGS = @orpara_CXXFLAGS@
+orpara_LDFLAGS = @orpara_LDFLAGS@
+orpara_LIBS = @orpara_LIBS@
 pdfdir = @pdfdir@
 plotter_CXXFLAGS = @plotter_CXXFLAGS@
 plotter_LDFLAGS = @plotter_LDFLAGS@
@@ -339,11 +346,14 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+AM_CXXFLAGS = $(orpara_CXXFLAGS)
+AM_LDFLAGS = $(orpara_LDFLAGS)
+LDADD = $(orpara_LIBS)
 uniqueseq_SOURCES = uniqueseq.cpp
 fastabund_SOURCES = fastabund.cpp 
-fastabund_CXXFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/src/consensus $(plotter_CXXFLAGS)
-fastabund_LDFLAGS = -L$(top_srcdir)/src $(plotter_LDFLALGS)
-fastabund_LDADD = $(top_srcdir)/src/consensus/liborparaconsensus.la $(plotter_LIBS) -lpthread
+fastabund_CXXFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/src/consensus $(AM_CXXFLAGS) $(plotter_CXXFLAGS)
+fastabund_LDFLAGS = -L$(top_srcdir)/src $(AM_LDFLAGS) $(plotter_LDFLALGS)
+fastabund_LDADD = $(top_srcdir)/src/consensus/liborparaconsensus.la $(LDADD) $(plotter_LIBS) -lpthread
 fastaleninfo_SOURCES = fastaleninfo.cpp
 combineseq_SOURCES = combineseq.cpp
 all: all-am

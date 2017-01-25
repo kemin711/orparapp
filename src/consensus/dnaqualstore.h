@@ -1,6 +1,10 @@
 #ifndef DNAQUALSTORE_H
 #define DNAQUALSTORE_H
 
+// (C) 2012 Kemin Zhou at orpara.com
+// This is a simple soreage calss for
+// working with fastq sequences
+
 #include <string>
 #include <vector>
 #include <system_error>

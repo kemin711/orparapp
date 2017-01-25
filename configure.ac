@@ -137,28 +137,34 @@ if test "$HAVE_BOOST"; then
 fi
 
 # Checks for libraries. `-lkemin':
-#save_LIBS=$LIBS
-#save_CXXFLAGS=$CXXFLAGS
-#save_LDFLAGS=$LDFLAGS
-LIBS="$LIBS -lkemin"
-CXXFLAGS="-I$prefix/include/orpara $CXXFLAGS"
-LDFLAGS="-L$prefix/lib $LDFLAGS"
+save_LIBS=$LIBS
+save_CXXFLAGS=$CXXFLAGS
+save_LDFLAGS=$LDFLAGS
+orpara_LIBS="-lkemin"
+orpara_CXXFLAGS="-I$prefix/include/orpara"
+orpara_LDFLAGS="-L$prefix/lib"
 AC_ARG_VAR([ORPARAIND], [PATH for orpara include dir, can be environment variable or confg variable])
 AC_ARG_VAR([ORPARALIB], [PATH for orpara lib dir])
 if (test -n "$ORPARAINC"); then 
-	CXXFLAGS="-I$ORPARAINC $CXXFLAGS"
+	orpara_CXXFLAGS="-I$ORPARAINC"
 fi
 if (test -n "$ORPARALIB"); then 
-	LDFLAGS="-L$ORPARALIB $LDFLAGS"
+	orpara_LDFLAGS="-L$ORPARALIBS"
 fi
+LIBS="$LIBS $orpara_LIB"
+CXXFLAGS="$orpara_CXXFLAGS $CXXFLAGS"
+LDFLAGS="$orpara_LDFLAGS $LDFLAGS"
 AC_CHECK_HEADERS([bioseq.h], [orpara_found=yes], [AC_MSG_ERROR([Unable to find orpara header])])
 AC_LINK_IFELSE(
 		[AC_LANG_PROGRAM([#include <bioseq.h>],  [orpara::bioseq dummy])],
 		[HAVE_ORPARA=1],
 		[AC_MSG_ERROR([orpara is not installed])])
-#LIBS=$save_LIBS
-#CXXFLAGS=$save_CXXFLAGS
-#LDFLAGS=$save_LDFLAGS
+AC_SUBST([orpara_LIBS])
+AC_SUBST([orpara_CXXFLAGS])
+AC_SUBST([orpara_LDFLAGS])
+LIBS=$save_LIBS
+CXXFLAGS=$save_CXXFLAGS
+LDFLAGS=$save_LDFLAGS
 
 # Checks for libraries. libplotter 
 save_LIBS=$LIBS

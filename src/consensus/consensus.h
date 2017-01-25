@@ -1,6 +1,15 @@
 #ifndef CONSENSUS_H
 #define CONSENSUS_H
 
+// (C) 2012 orpra.com Kemin Zhou orpara.com
+// last modified 2016.  This class started with basic 
+// consensus, then modified to add more features.
+// After sequences are aligned to a representative member,
+// This calss simply them to a column-summary of bases
+// This class is adopted to use Nucleic acids, in the future
+// abstraction should be done to work with protein sequences.
+// Also imporved performance with multi-threading
+
 #include <string>
 #include <vector>
 #include <map>
@@ -21,6 +30,7 @@
 #include <fastq.h>
 #include <stddev.h>
 #include "dnaqualstore.h"
+
 
 //#define DEBUG
 
@@ -802,7 +812,8 @@ class ClusterProgparam {
       static string datadir;
 
    public:
-      ClusterProgparam() : refkmerFile("silva123Bacteria.kmc"),
+      ClusterProgparam() : refkmerFile(), fastqfile(), salvage(true) { }
+      ClusterProgparam(const string &refkfile) : refkmerFile(refkfile),
          fastqfile(), salvage(true) { }
       void setInputFile(const string& file) {
           fastqfile=file; }

@@ -1,6 +1,6 @@
-AM_CXXFLAGS = -I.. 
-AM_LDFLAGS = -L..
-LDADD = ../liborparappcommon.la
+AM_CXXFLAGS = -I.. $(orpara_CXXFLAGS) 
+AM_LDFLAGS = -L.. $(orpara_LDFLAGS)
+LDADD = ../liborparappcommon.la $(orpara_LIBS)
 bin_PROGRAMS = selortho GCcontent stemloop comparetoref picksubseq bam2tab tabulatepair validateprtsite polymerstat comparefastq bamfilter
 
 selortho_SOURCES = selortho.cpp 
@@ -8,8 +8,8 @@ selortho_SOURCES = selortho.cpp
 GCcontent_SOURCES =  GCcontent.cpp
 
 stemloop_SOURCES = stemloop.cpp 
-stemloop_CXXFLAGS = $(bam_CXXFLAGS) $(boost_CXXFLAGS) $(AM_CXXFLAGS)
-stemloop_LDFLAGS = $(bam_LDFLAGS) $(boost_LDFLAGS) $(AM_LDFLAGS)
+stemloop_CXXFLAGS = $(AM_CXXFLAGS) $(bam_CXXFLAGS) $(boost_CXXFLAGS)
+stemloop_LDFLAGS = $(AM_LDFLAGS) $(bam_LDFLAGS) $(boost_LDFLAGS) 
 stemloop_LDADD = $(LDADD) $(bam_LIBS) $(boost_LIBS)
 
 comparetoref_SOURCES = comparetoref.cpp genoanalyzer.h genoanalyzer.cpp

@@ -109,6 +109,8 @@ PROGRAMS = $(bin_PROGRAMS)
 am_estsep_OBJECTS = estsep.$(OBJEXT)
 estsep_OBJECTS = $(am_estsep_OBJECTS)
 estsep_LDADD = $(LDADD)
+am__DEPENDENCIES_1 =
+estsep_DEPENDENCIES = $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -116,27 +118,35 @@ am__v_lt_1 =
 am_fastadiscard_OBJECTS = fastadiscard.$(OBJEXT)
 fastadiscard_OBJECTS = $(am_fastadiscard_OBJECTS)
 fastadiscard_LDADD = $(LDADD)
+fastadiscard_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_fastapick_OBJECTS = fastapick.$(OBJEXT)
 fastapick_OBJECTS = $(am_fastapick_OBJECTS)
 fastapick_LDADD = $(LDADD)
+fastapick_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_fastapickpack_OBJECTS = fastapick.$(OBJEXT)
 fastapickpack_OBJECTS = $(am_fastapickpack_OBJECTS)
 fastapickpack_LDADD = $(LDADD)
+fastapickpack_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_picknewseq_OBJECTS = picknewseq.$(OBJEXT) version.$(OBJEXT)
 picknewseq_OBJECTS = $(am_picknewseq_OBJECTS)
 picknewseq_LDADD = $(LDADD)
+picknewseq_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_rmfrgss_OBJECTS = rmfrgss.$(OBJEXT)
 rmfrgss_OBJECTS = $(am_rmfrgss_OBJECTS)
 rmfrgss_LDADD = $(LDADD)
+rmfrgss_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_rmseqbyid_OBJECTS = rmseqbyid.$(OBJEXT)
 rmseqbyid_OBJECTS = $(am_rmseqbyid_OBJECTS)
 rmseqbyid_LDADD = $(LDADD)
+rmseqbyid_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_seqdiv_OBJECTS = seqdiv.$(OBJEXT) nameoutfile.$(OBJEXT)
 seqdiv_OBJECTS = $(am_seqdiv_OBJECTS)
 seqdiv_LDADD = $(LDADD)
+seqdiv_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_seqsep_OBJECTS = seqsep.$(OBJEXT)
 seqsep_OBJECTS = $(am_seqsep_OBJECTS)
 seqsep_LDADD = $(LDADD)
+seqsep_DEPENDENCIES = $(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -355,6 +365,9 @@ localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
+orpara_CXXFLAGS = @orpara_CXXFLAGS@
+orpara_LDFLAGS = @orpara_LDFLAGS@
+orpara_LIBS = @orpara_LIBS@
 pdfdir = @pdfdir@
 plotter_CXXFLAGS = @plotter_CXXFLAGS@
 plotter_LDFLAGS = @plotter_LDFLAGS@
@@ -371,15 +384,16 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+AM_CXXFLAGS = $(orpara_CXXFLAGS)
+AM_LDFLAGS = $(orpara_LDFLAGS)
+LDADD = $(orpara_LIBS)
 seqsep_SOURCES = seqsep.cpp
 rmfrgss_SOURCES = rmfrgss.cpp
 estsep_SOURCES = estsep.cpp
 picknewseq_SOURCES = picknewseq.cpp version.h version.cpp
 seqdiv_SOURCES = seqdiv.cpp nameoutfile.h nameoutfile.cpp
 rmseqbyid_SOURCES = rmseqbyid.cpp
-#rmseqbyid_LDADD = -lkemin
 fastapick_SOURCES = fastapick.cpp
-#fastapick_LDADD = -lkemin
 fastapickpack_SOURCES = fastapick.cpp
 fastadiscard_SOURCES = fastadiscard.cpp
 all: all-am
@@ -752,7 +766,6 @@ uninstall-am: uninstall-binPROGRAMS
 
 .PRECIOUS: Makefile
 
-#fastadiscard_LDADD = -lkemin
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -1,6 +1,9 @@
 #ifndef BLASTNROW_H
 #define BLASTNROW_H
 
+// This a basic class to work with blastn results
+// (C) 2002 Kemin Zhou at orpara.com
+
 #include <map>
 #include <iostream>
 #include <iterator>

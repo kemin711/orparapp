@@ -1,3 +1,7 @@
+AM_CXXFLAGS=$(orpara_CXXFLAGS)
+AM_LDFLAGS=$(orpara_LDFLAGS)
+LDADD=$(orpara_LIBS)
+
 bin_PROGRAMS = estsep seqsep seqdiv rmseqbyid fastapick fastadiscard fastapickpack picknewseq rmfrgss
 
 seqsep_SOURCES = seqsep.cpp
@@ -11,13 +15,10 @@ picknewseq_SOURCES = picknewseq.cpp version.h version.cpp
 seqdiv_SOURCES = seqdiv.cpp nameoutfile.h nameoutfile.cpp
 
 rmseqbyid_SOURCES = rmseqbyid.cpp
-#rmseqbyid_LDADD = -lkemin
 
 fastapick_SOURCES = fastapick.cpp
-#fastapick_LDADD = -lkemin
 
 fastapickpack_SOURCES = fastapick.cpp
 
 fastadiscard_SOURCES = fastadiscard.cpp
-#fastadiscard_LDADD = -lkemin
 
