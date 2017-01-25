@@ -17,11 +17,10 @@ class Progparam {
    private:
       string kmerRef;
       bool flipread;
-      static string metagData;
+      static string datadir;
 
    public:
-      //Progparam() : kmerRef("/remote/DataAnalysis/metag/refseq/silva123Bacteria.kmc"), flipread(true) { }
-      Progparam() : kmerRef(metagData + "/refseq/silva123Bacteria.kmc"), flipread(true) { }
+      Progparam() : kmerRef(datadir + "/refseq/silva123Bacteria.kmc"), flipread(true) { }
       const string& getKmerReference() const { return kmerRef; }
       bool flip() const { return flipread; }
       /**
@@ -37,7 +36,7 @@ class Progparam {
             kmerRef="/home/kzhou/work/metag/refseq/silva123Bacteria.kmc";
          }
       }
-      static void setMetagData(const string &dirname) { metagData = dirname; }
+      static void setMetagData(const string &dirname) { datadir = dirname; }
 };
 
 void usage() {
@@ -224,4 +223,4 @@ void writeFasta(const map<DNA, int> &seqcnt, const string &outfile,
 }
 
 // static data for testing
-string Progparam::metagData="/home/kzhou/work/metag";
+string Progparam::datadir="/home/kzhou/work/metag";
