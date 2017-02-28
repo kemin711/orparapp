@@ -93,9 +93,7 @@ bin_PROGRAMS = bam2cleanfastq$(EXEEXT) checkdupfasq$(EXEEXT) \
 	cpfastapart$(EXEEXT) fastareduceid$(EXEEXT) \
 	fastq2fasta$(EXEEXT) fastq2tab$(EXEEXT) fastqpick$(EXEEXT) \
 	fastqreduceid$(EXEEXT) fastqstat$(EXEEXT) fishing$(EXEEXT) \
-	linearize$(EXEEXT) parsencbi16s$(EXEEXT) parsencbissu$(EXEEXT) \
-	parsepatricssu$(EXEEXT) parserdpssu$(EXEEXT) \
-	parsesilvassu$(EXEEXT) revcomp$(EXEEXT) rna2dna$(EXEEXT) \
+	linearize$(EXEEXT) revcomp$(EXEEXT) rna2dna$(EXEEXT) \
 	tandemcount$(EXEEXT) trimfastq$(EXEEXT)
 subdir = src/seqconv
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -178,26 +176,6 @@ linearize_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
 linearize_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(linearize_CXXFLAGS) \
 	$(CXXFLAGS) $(linearize_LDFLAGS) $(LDFLAGS) -o $@
-am_parsencbi16s_OBJECTS = parsencbi16s.$(OBJEXT)
-parsencbi16s_OBJECTS = $(am_parsencbi16s_OBJECTS)
-parsencbi16s_LDADD = $(LDADD)
-parsencbi16s_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_parsencbissu_OBJECTS = parsencbissu.$(OBJEXT)
-parsencbissu_OBJECTS = $(am_parsencbissu_OBJECTS)
-parsencbissu_LDADD = $(LDADD)
-parsencbissu_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_parsepatricssu_OBJECTS = parsepatricssu.$(OBJEXT)
-parsepatricssu_OBJECTS = $(am_parsepatricssu_OBJECTS)
-parsepatricssu_LDADD = $(LDADD)
-parsepatricssu_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_parserdpssu_OBJECTS = parserdpssu.$(OBJEXT)
-parserdpssu_OBJECTS = $(am_parserdpssu_OBJECTS)
-parserdpssu_LDADD = $(LDADD)
-parserdpssu_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_parsesilvassu_OBJECTS = parsesilvassu.$(OBJEXT)
-parsesilvassu_OBJECTS = $(am_parsesilvassu_OBJECTS)
-parsesilvassu_LDADD = $(LDADD)
-parsesilvassu_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_revcomp_OBJECTS = revcomp.$(OBJEXT)
 revcomp_OBJECTS = $(am_revcomp_OBJECTS)
 revcomp_LDADD = $(LDADD)
@@ -254,20 +232,16 @@ SOURCES = $(bam2cleanfastq_SOURCES) $(checkdupfasq_SOURCES) \
 	$(fastq2fasta_SOURCES) $(fastq2tab_SOURCES) \
 	$(fastqpick_SOURCES) $(fastqreduceid_SOURCES) \
 	$(fastqstat_SOURCES) $(fishing_SOURCES) $(linearize_SOURCES) \
-	$(parsencbi16s_SOURCES) $(parsencbissu_SOURCES) \
-	$(parsepatricssu_SOURCES) $(parserdpssu_SOURCES) \
-	$(parsesilvassu_SOURCES) $(revcomp_SOURCES) $(rna2dna_SOURCES) \
-	$(tandemcount_SOURCES) $(trimfastq_SOURCES)
+	$(revcomp_SOURCES) $(rna2dna_SOURCES) $(tandemcount_SOURCES) \
+	$(trimfastq_SOURCES)
 DIST_SOURCES = $(bam2cleanfastq_SOURCES) $(checkdupfasq_SOURCES) \
 	$(checkdupfasta_SOURCES) $(cpfasqpart_SOURCES) \
 	$(cpfastapart_SOURCES) $(fastareduceid_SOURCES) \
 	$(fastq2fasta_SOURCES) $(fastq2tab_SOURCES) \
 	$(fastqpick_SOURCES) $(fastqreduceid_SOURCES) \
 	$(fastqstat_SOURCES) $(fishing_SOURCES) $(linearize_SOURCES) \
-	$(parsencbi16s_SOURCES) $(parsencbissu_SOURCES) \
-	$(parsepatricssu_SOURCES) $(parserdpssu_SOURCES) \
-	$(parsesilvassu_SOURCES) $(revcomp_SOURCES) $(rna2dna_SOURCES) \
-	$(tandemcount_SOURCES) $(trimfastq_SOURCES)
+	$(revcomp_SOURCES) $(rna2dna_SOURCES) $(tandemcount_SOURCES) \
+	$(trimfastq_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -319,6 +293,8 @@ CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+DOT = @DOT@
+DOXYGEN = @DOXYGEN@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -364,6 +340,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PDFLATEX = @PDFLATEX@
 PLOTUTILINC = @PLOTUTILINC@
 PLOTUTILLIB = @PLOTUTILLIB@
 PTHREAD_CC = @PTHREAD_CC@
@@ -470,11 +447,6 @@ linearize_SOURCES = linearize.cpp
 linearize_CXXFLAGS = $(AM_CXXFLAGS) $(boost_CXXFLAGS)
 linearize_LDFLAGS = $(AM_LDFLAGS) $(boost_LDFLAGS)
 linearize_LDADD = $(LDADD) $(boost_LIBS)
-parsencbi16s_SOURCES = parsencbi16s.cpp
-parsencbissu_SOURCES = parsencbissu.cpp
-parsepatricssu_SOURCES = parsepatricssu.cpp
-parserdpssu_SOURCES = parserdpssu.cpp
-parsesilvassu_SOURCES = parsesilvassu.cpp
 revcomp_SOURCES = revcomp.cpp
 rna2dna_SOURCES = rna2dna.cpp
 tandemcount_SOURCES = tandemcount.cpp
@@ -614,26 +586,6 @@ linearize$(EXEEXT): $(linearize_OBJECTS) $(linearize_DEPENDENCIES) $(EXTRA_linea
 	@rm -f linearize$(EXEEXT)
 	$(AM_V_CXXLD)$(linearize_LINK) $(linearize_OBJECTS) $(linearize_LDADD) $(LIBS)
 
-parsencbi16s$(EXEEXT): $(parsencbi16s_OBJECTS) $(parsencbi16s_DEPENDENCIES) $(EXTRA_parsencbi16s_DEPENDENCIES) 
-	@rm -f parsencbi16s$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(parsencbi16s_OBJECTS) $(parsencbi16s_LDADD) $(LIBS)
-
-parsencbissu$(EXEEXT): $(parsencbissu_OBJECTS) $(parsencbissu_DEPENDENCIES) $(EXTRA_parsencbissu_DEPENDENCIES) 
-	@rm -f parsencbissu$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(parsencbissu_OBJECTS) $(parsencbissu_LDADD) $(LIBS)
-
-parsepatricssu$(EXEEXT): $(parsepatricssu_OBJECTS) $(parsepatricssu_DEPENDENCIES) $(EXTRA_parsepatricssu_DEPENDENCIES) 
-	@rm -f parsepatricssu$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(parsepatricssu_OBJECTS) $(parsepatricssu_LDADD) $(LIBS)
-
-parserdpssu$(EXEEXT): $(parserdpssu_OBJECTS) $(parserdpssu_DEPENDENCIES) $(EXTRA_parserdpssu_DEPENDENCIES) 
-	@rm -f parserdpssu$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(parserdpssu_OBJECTS) $(parserdpssu_LDADD) $(LIBS)
-
-parsesilvassu$(EXEEXT): $(parsesilvassu_OBJECTS) $(parsesilvassu_DEPENDENCIES) $(EXTRA_parsesilvassu_DEPENDENCIES) 
-	@rm -f parsesilvassu$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(parsesilvassu_OBJECTS) $(parsesilvassu_LDADD) $(LIBS)
-
 revcomp$(EXEEXT): $(revcomp_OBJECTS) $(revcomp_DEPENDENCIES) $(EXTRA_revcomp_DEPENDENCIES) 
 	@rm -f revcomp$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(revcomp_OBJECTS) $(revcomp_LDADD) $(LIBS)
@@ -669,11 +621,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fastqstat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fishing-fishing.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linearize-linearize.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parsencbi16s.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parsencbissu.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parsepatricssu.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parserdpssu.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parsesilvassu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/revcomp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rna2dna.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tandemcount.Po@am__quote@

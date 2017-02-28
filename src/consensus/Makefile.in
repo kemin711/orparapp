@@ -141,7 +141,8 @@ am__objects_1 =
 am__objects_2 = liborparaconsensus_la-dnaqualstore.lo \
 	liborparaconsensus_la-blastnrow.lo \
 	liborparaconsensus_la-consensus.lo \
-	liborparaconsensus_la-stalactitegraph.lo
+	liborparaconsensus_la-stalactitegraph.lo \
+	liborparaconsensus_la-conshort.lo
 am_liborparaconsensus_la_OBJECTS = $(am__objects_1) $(am__objects_1) \
 	$(am__objects_2)
 liborparaconsensus_la_OBJECTS = $(am_liborparaconsensus_la_OBJECTS)
@@ -259,6 +260,8 @@ CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+DOT = @DOT@
+DOXYGEN = @DOXYGEN@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -304,6 +307,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PDFLATEX = @PDFLATEX@
 PLOTUTILINC = @PLOTUTILINC@
 PLOTUTILLIB = @PLOTUTILLIB@
 PTHREAD_CC = @PTHREAD_CC@
@@ -387,9 +391,9 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 #headers = dnaqualstore.h consensus.h boxpile.h piechart.h textpile.h stalactitegraph.h constaxmap.h blastnrow.h 
-libheaders = dnaqualstore.h consensus.h blastnrow.h 
+libheaders = dnaqualstore.h consensus.h blastnrow.h conshort.h
 headers = stalactitegraph.h 
-sources = dnaqualstore.cpp blastnrow.cpp consensus.cpp stalactitegraph.cpp 
+sources = dnaqualstore.cpp blastnrow.cpp consensus.cpp stalactitegraph.cpp conshort.cpp
 pkginclude_HEADERS = $(libheaders)
 lib_LTLIBRARIES = liborparaconsensus.la
 liborparaconsensus_la_SOURCES = $(libheaders) $(headers) $(sources)
@@ -476,6 +480,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liborparaconsensus_la-blastnrow.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liborparaconsensus_la-consensus.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liborparaconsensus_la-conshort.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liborparaconsensus_la-dnaqualstore.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liborparaconsensus_la-stalactitegraph.Plo@am__quote@
 
@@ -527,6 +532,13 @@ liborparaconsensus_la-stalactitegraph.lo: stalactitegraph.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='stalactitegraph.cpp' object='liborparaconsensus_la-stalactitegraph.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -c -o liborparaconsensus_la-stalactitegraph.lo `test -f 'stalactitegraph.cpp' || echo '$(srcdir)/'`stalactitegraph.cpp
+
+liborparaconsensus_la-conshort.lo: conshort.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -MT liborparaconsensus_la-conshort.lo -MD -MP -MF $(DEPDIR)/liborparaconsensus_la-conshort.Tpo -c -o liborparaconsensus_la-conshort.lo `test -f 'conshort.cpp' || echo '$(srcdir)/'`conshort.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liborparaconsensus_la-conshort.Tpo $(DEPDIR)/liborparaconsensus_la-conshort.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='conshort.cpp' object='liborparaconsensus_la-conshort.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liborparaconsensus_la_CXXFLAGS) $(CXXFLAGS) -c -o liborparaconsensus_la-conshort.lo `test -f 'conshort.cpp' || echo '$(srcdir)/'`conshort.cpp
 
 mostlyclean-libtool:
 	-rm -f *.lo

@@ -88,8 +88,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = uniqueseq$(EXEEXT) fastabund$(EXEEXT) \
-	fastaleninfo$(EXEEXT) combineseq$(EXEEXT)
+bin_PROGRAMS = uniqueseq$(EXEEXT) fastaleninfo$(EXEEXT) \
+	combineseq$(EXEEXT)
 subdir = src/seqana/fasta
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -114,15 +114,6 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-am_fastabund_OBJECTS = fastabund-fastabund.$(OBJEXT)
-fastabund_OBJECTS = $(am_fastabund_OBJECTS)
-am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
-fastabund_DEPENDENCIES =  \
-	$(top_srcdir)/src/consensus/liborparaconsensus.la \
-	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
-fastabund_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(fastabund_CXXFLAGS) \
-	$(CXXFLAGS) $(fastabund_LDFLAGS) $(LDFLAGS) -o $@
 am_fastaleninfo_OBJECTS = fastaleninfo.$(OBJEXT)
 fastaleninfo_OBJECTS = $(am_fastaleninfo_OBJECTS)
 fastaleninfo_LDADD = $(LDADD)
@@ -165,10 +156,10 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(combineseq_SOURCES) $(fastabund_SOURCES) \
-	$(fastaleninfo_SOURCES) $(uniqueseq_SOURCES)
-DIST_SOURCES = $(combineseq_SOURCES) $(fastabund_SOURCES) \
-	$(fastaleninfo_SOURCES) $(uniqueseq_SOURCES)
+SOURCES = $(combineseq_SOURCES) $(fastaleninfo_SOURCES) \
+	$(uniqueseq_SOURCES)
+DIST_SOURCES = $(combineseq_SOURCES) $(fastaleninfo_SOURCES) \
+	$(uniqueseq_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -220,6 +211,8 @@ CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+DOT = @DOT@
+DOXYGEN = @DOXYGEN@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -265,6 +258,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PDFLATEX = @PDFLATEX@
 PLOTUTILINC = @PLOTUTILINC@
 PLOTUTILLIB = @PLOTUTILLIB@
 PTHREAD_CC = @PTHREAD_CC@
@@ -350,10 +344,11 @@ AM_CXXFLAGS = $(orpara_CXXFLAGS)
 AM_LDFLAGS = $(orpara_LDFLAGS)
 LDADD = $(orpara_LIBS)
 uniqueseq_SOURCES = uniqueseq.cpp
-fastabund_SOURCES = fastabund.cpp 
-fastabund_CXXFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/src/consensus $(AM_CXXFLAGS) $(plotter_CXXFLAGS)
-fastabund_LDFLAGS = -L$(top_srcdir)/src $(AM_LDFLAGS) $(plotter_LDFLALGS)
-fastabund_LDADD = $(top_srcdir)/src/consensus/liborparaconsensus.la $(LDADD) $(plotter_LIBS) -lpthread
+
+# removed from this distribution
+#fastabund_CXXFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/src/consensus $(AM_CXXFLAGS) $(plotter_CXXFLAGS)
+#fastabund_LDFLAGS = -L$(top_srcdir)/src $(AM_LDFLAGS) $(plotter_LDFLALGS)
+#fastabund_LDADD = $(top_srcdir)/src/consensus/liborparaconsensus.la $(LDADD) $(plotter_LIBS) -lpthread
 fastaleninfo_SOURCES = fastaleninfo.cpp
 combineseq_SOURCES = combineseq.cpp
 all: all-am
@@ -443,10 +438,6 @@ combineseq$(EXEEXT): $(combineseq_OBJECTS) $(combineseq_DEPENDENCIES) $(EXTRA_co
 	@rm -f combineseq$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(combineseq_OBJECTS) $(combineseq_LDADD) $(LIBS)
 
-fastabund$(EXEEXT): $(fastabund_OBJECTS) $(fastabund_DEPENDENCIES) $(EXTRA_fastabund_DEPENDENCIES) 
-	@rm -f fastabund$(EXEEXT)
-	$(AM_V_CXXLD)$(fastabund_LINK) $(fastabund_OBJECTS) $(fastabund_LDADD) $(LIBS)
-
 fastaleninfo$(EXEEXT): $(fastaleninfo_OBJECTS) $(fastaleninfo_DEPENDENCIES) $(EXTRA_fastaleninfo_DEPENDENCIES) 
 	@rm -f fastaleninfo$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(fastaleninfo_OBJECTS) $(fastaleninfo_LDADD) $(LIBS)
@@ -462,7 +453,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/combineseq.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fastabund-fastabund.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fastaleninfo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uniqueseq.Po@am__quote@
 
@@ -486,20 +476,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
-
-fastabund-fastabund.o: fastabund.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fastabund_CXXFLAGS) $(CXXFLAGS) -MT fastabund-fastabund.o -MD -MP -MF $(DEPDIR)/fastabund-fastabund.Tpo -c -o fastabund-fastabund.o `test -f 'fastabund.cpp' || echo '$(srcdir)/'`fastabund.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fastabund-fastabund.Tpo $(DEPDIR)/fastabund-fastabund.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='fastabund.cpp' object='fastabund-fastabund.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fastabund_CXXFLAGS) $(CXXFLAGS) -c -o fastabund-fastabund.o `test -f 'fastabund.cpp' || echo '$(srcdir)/'`fastabund.cpp
-
-fastabund-fastabund.obj: fastabund.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fastabund_CXXFLAGS) $(CXXFLAGS) -MT fastabund-fastabund.obj -MD -MP -MF $(DEPDIR)/fastabund-fastabund.Tpo -c -o fastabund-fastabund.obj `if test -f 'fastabund.cpp'; then $(CYGPATH_W) 'fastabund.cpp'; else $(CYGPATH_W) '$(srcdir)/fastabund.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fastabund-fastabund.Tpo $(DEPDIR)/fastabund-fastabund.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='fastabund.cpp' object='fastabund-fastabund.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fastabund_CXXFLAGS) $(CXXFLAGS) -c -o fastabund-fastabund.obj `if test -f 'fastabund.cpp'; then $(CYGPATH_W) 'fastabund.cpp'; else $(CYGPATH_W) '$(srcdir)/fastabund.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

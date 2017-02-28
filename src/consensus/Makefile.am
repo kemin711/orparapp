@@ -1,9 +1,9 @@
 #AUTOMAKE_OPTIONS = subdir-objects
 
 #headers = dnaqualstore.h consensus.h boxpile.h piechart.h textpile.h stalactitegraph.h constaxmap.h blastnrow.h 
-libheaders = dnaqualstore.h consensus.h blastnrow.h 
+libheaders = dnaqualstore.h consensus.h blastnrow.h conshort.h
 headers = stalactitegraph.h 
-sources = dnaqualstore.cpp blastnrow.cpp consensus.cpp stalactitegraph.cpp 
+sources = dnaqualstore.cpp blastnrow.cpp consensus.cpp stalactitegraph.cpp conshort.cpp
 
 pkginclude_HEADERS = $(libheaders)
 lib_LTLIBRARIES = liborparaconsensus.la

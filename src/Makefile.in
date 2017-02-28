@@ -260,6 +260,8 @@ CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+DOT = @DOT@
+DOXYGEN = @DOXYGEN@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -305,6 +307,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PDFLATEX = @PDFLATEX@
 PLOTUTILINC = @PLOTUTILINC@
 PLOTUTILLIB = @PLOTUTILLIB@
 PTHREAD_CC = @PTHREAD_CC@
@@ -394,7 +397,7 @@ sources = nucaln.cpp MismatchMapping.cpp match.cpp stagergap.cpp
 #pkginclude_HEADERS = $(headers)
 noinst_LTLIBRARIES = liborparappcommon.la
 liborparappcommon_la_SOURCES = $(headers) $(sources)
-SUBDIRS = . consensus seqana seqconv test
+SUBDIRS = . consensus seqana seqconv bionj test
 all: all-recursive
 
 .SUFFIXES:
